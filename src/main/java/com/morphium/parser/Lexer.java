@@ -13,6 +13,7 @@ public class Lexer {
     static {
         KEYWORDS.put("let", Token.Type.LET);
         KEYWORDS.put("if", Token.Type.IF);
+        KEYWORDS.put("else", Token.Type.ELSE);
         KEYWORDS.put("for", Token.Type.FOR);
         KEYWORDS.put("of", Token.Type.OF);
         KEYWORDS.put("import", Token.Type.IMPORT);
@@ -22,6 +23,10 @@ public class Lexer {
         KEYWORDS.put("function", Token.Type.FUNCTION);
         KEYWORDS.put("return", Token.Type.RETURN);
         KEYWORDS.put("global", Token.Type.GLOBAL);
+        KEYWORDS.put("switch", Token.Type.SWITCH);
+        KEYWORDS.put("case", Token.Type.CASE);
+        KEYWORDS.put("default", Token.Type.DEFAULT);
+        KEYWORDS.put("break", Token.Type.BREAK);
         KEYWORDS.put("true", Token.Type.TRUE);
         KEYWORDS.put("false", Token.Type.FALSE);
         KEYWORDS.put("null", Token.Type.NULL);

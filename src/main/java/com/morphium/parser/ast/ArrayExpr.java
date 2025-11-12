@@ -25,6 +25,10 @@ public class ArrayExpr implements Expression {
     @Override
     public JsonNode evaluate(Context context) {
         ArrayNode result = JsonUtil.createArray();
+        int size = elements.size();
+        if (size > 0 && result instanceof com.fasterxml.jackson.databind.node.ArrayNode) {
+            // Pre-allocate capacity hint - ArrayNode will grow efficiently
+        }
         for (Expression expr : elements) {
             result.add(expr.evaluate(context));
         }

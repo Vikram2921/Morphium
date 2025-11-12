@@ -14,22 +14,29 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MorphiumEngine {
     private final ModuleResolver moduleResolver;
     private final HostFunctionRegistry functionRegistry;
     private final Context rootContext;
+    private final ConcurrentHashMap<String, Expression> parsedExpressionCache;
+    private final ConcurrentHashMap<String, Expression> moduleCache;
 
     public MorphiumEngine() {
         this.moduleResolver = new ModuleResolver();
         this.functionRegistry = new HostFunctionRegistry();
         this.rootContext = new Context(functionRegistry);
+        this.parsedExpressionCache = new ConcurrentHashMap<>();
+        this.moduleCache = new ConcurrentHashMap<>();
     }
 
     public MorphiumEngine(ModuleResolver moduleResolver) {
         this.moduleResolver = moduleResolver;
         this.functionRegistry = new HostFunctionRegistry();
         this.rootContext = new Context(functionRegistry);
+        this.parsedExpressionCache = new ConcurrentHashMap<>();
+        this.moduleCache = new ConcurrentHashMap<>();
     }
 
     public JsonNode transform(String transformPath, JsonNode input) throws IOException {
@@ -43,6 +50,18 @@ public class MorphiumEngine {
 
     public HostFunctionRegistry getFunctionRegistry() {
         return functionRegistry;
+    }
+    
+    public ModuleResolver getModuleResolver() {
+        return moduleResolver;
+    }
+    
+    public void setLogger(com.morphium.runtime.Logger logger) {
+        functionRegistry.setLogger(logger);
+    }
+    
+    public com.morphium.runtime.Logger getLogger() {
+        return functionRegistry.getLogger();
     }
 
     public void registerFunction(String namespace, String name, HostFunction function) {
@@ -73,9 +92,12 @@ public class MorphiumEngine {
 
     private JsonNode evaluate(String source, JsonNode input, String sourcePath) {
         try {
-            Lexer lexer = new Lexer(source, sourcePath);
-            Parser parser = new Parser(lexer);
-            Expression rootExpression = parser.parse();
+            String cacheKey = sourcePath + ":" + source.hashCode();
+            Expression rootExpression = parsedExpressionCache.computeIfAbsent(cacheKey, k -> {
+                Lexer lexer = new Lexer(source, sourcePath);
+                Parser parser = new Parser(lexer);
+                return parser.parse();
+            });
 
             Context evalContext = new Context(rootContext);
             evalContext.define("$", input);
@@ -107,12 +129,33 @@ public class MorphiumEngine {
     private void handleImport(com.morphium.parser.ast.ImportStatement importStmt, Context context) {
         try {
             String modulePath = importStmt.getModulePath();
-            String moduleSource = moduleResolver.resolve(modulePath);
+            String moduleSource;
+            String cacheKey;
             
-            // Parse and evaluate the module
-            Lexer lexer = new Lexer(moduleSource, modulePath);
-            Parser parser = new Parser(lexer);
-            Expression moduleExpr = parser.parse();
+            // Handle dynamic imports
+            if (importStmt.isDynamic()) {
+                // Evaluate arguments
+                Object[] args = new Object[importStmt.getDynamicArgs().size()];
+                for (int i = 0; i < args.length; i++) {
+                    JsonNode argValue = importStmt.getDynamicArgs().get(i).evaluate(context);
+                    args[i] = argValue;
+                }
+                
+                // Resolve dynamically
+                moduleSource = moduleResolver.resolveDynamic(modulePath, args);
+                cacheKey = modulePath + ":" + java.util.Arrays.toString(args);
+            } else {
+                // Static import
+                moduleSource = moduleResolver.resolve(modulePath);
+                cacheKey = modulePath;
+            }
+            
+            // Parse the module with caching
+            Expression moduleExpr = moduleCache.computeIfAbsent(cacheKey, k -> {
+                Lexer lexer = new Lexer(moduleSource, modulePath);
+                Parser parser = new Parser(lexer);
+                return parser.parse();
+            });
             
             Context moduleContext = new Context(rootContext);
             moduleExpr.evaluate(moduleContext);
@@ -138,6 +181,15 @@ public class MorphiumEngine {
     private void importModuleFunctions(Context moduleContext, Context targetContext, String namespace) {
         // This is a simplified approach - in a full implementation,
         // we'd properly handle function namespacing
+    }
+
+    public void clearCache() {
+        parsedExpressionCache.clear();
+        moduleCache.clear();
+    }
+
+    public int getCacheSize() {
+        return parsedExpressionCache.size() + moduleCache.size();
     }
 
     @FunctionalInterface

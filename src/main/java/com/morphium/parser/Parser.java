@@ -46,6 +46,12 @@ public class Parser {
                 if (globalExpr != null) {
                     block.addExpression(globalExpr);
                 }
+            } else if (match(Token.Type.IF)) {
+                block.addExpression(parseIfStatement());
+            } else if (match(Token.Type.SWITCH)) {
+                block.addExpression(parseSwitchStatement());
+            } else if (match(Token.Type.FOR)) {
+                block.addExpression(parseForOfStatement());
             } else {
                 block.addExpression(parseExpression());
                 if (!isAtEnd()) {
@@ -142,7 +148,41 @@ public class Parser {
     }
 
     private Expression parseImportStatement() {
-        Token pathToken = consume(Token.Type.STRING, "Expected module path");
+        // Check if it's a dynamic import: import functionName(...) as alias
+        if (check(Token.Type.IDENTIFIER)) {
+            int savedPosition = current;
+            Token functionToken = advance();
+            
+            if (match(Token.Type.LPAREN)) {
+                // This is a dynamic import
+                String functionName = functionToken.getLexeme();
+                List<Expression> args = new java.util.ArrayList<>();
+                
+                if (!check(Token.Type.RPAREN)) {
+                    do {
+                        args.add(parseExpression());
+                    } while (match(Token.Type.COMMA));
+                }
+                
+                consume(Token.Type.RPAREN, "Expected ')' after dynamic import arguments");
+                
+                String alias = null;
+                if (match(Token.Type.AS)) {
+                    Token aliasToken = consume(Token.Type.IDENTIFIER, "Expected alias name");
+                    alias = aliasToken.getLexeme();
+                }
+                
+                matchOptional(Token.Type.SEMICOLON);
+                
+                return new ImportStatement(functionName, alias, null, true, args);
+            } else {
+                // Not a dynamic import, reset and parse as string
+                current = savedPosition;
+            }
+        }
+        
+        // Static import: import "path" as alias
+        Token pathToken = consume(Token.Type.STRING, "Expected module path or function call");
         String modulePath = (String) pathToken.getLiteral();
         
         String alias = null;
@@ -378,6 +418,18 @@ public class Parser {
             return new IdentifierExpr(previous().getLexeme());
         }
         
+        if (match(Token.Type.IF)) {
+            return parseIfStatement();
+        }
+        
+        if (match(Token.Type.SWITCH)) {
+            return parseSwitchStatement();
+        }
+        
+        if (match(Token.Type.FOR)) {
+            return parseForOfStatement();
+        }
+        
         if (match(Token.Type.LPAREN)) {
             Expression expr = parseExpression();
             consume(Token.Type.RPAREN, "Expected ')' after expression");
@@ -486,5 +538,108 @@ public class Parser {
 
     private MorphiumException error(Token token, String message) {
         return new MorphiumException(message, token.getSourcePath(), token.getLine(), token.getColumn());
+    }
+    
+    private Expression parseIfStatement() {
+        consume(Token.Type.LPAREN, "Expected '(' after 'if'");
+        Expression condition = parseExpression();
+        consume(Token.Type.RPAREN, "Expected ')' after if condition");
+        
+        Expression thenBranch = parseStatementOrBlock();
+        
+        Expression elseBranch = null;
+        if (match(Token.Type.ELSE)) {
+            elseBranch = parseStatementOrBlock();
+        }
+        
+        return new IfStatement(condition, thenBranch, elseBranch);
+    }
+    
+    private Expression parseSwitchStatement() {
+        consume(Token.Type.LPAREN, "Expected '(' after 'switch'");
+        Expression expression = parseExpression();
+        consume(Token.Type.RPAREN, "Expected ')' after switch expression");
+        consume(Token.Type.LBRACE, "Expected '{' after switch expression");
+        
+        java.util.List<SwitchStatement.CaseClause> cases = new java.util.ArrayList<>();
+        Expression defaultCase = null;
+        
+        while (!check(Token.Type.RBRACE) && !isAtEnd()) {
+            if (match(Token.Type.CASE)) {
+                Expression caseValue = parseExpression();
+                consume(Token.Type.COLON, "Expected ':' after case value");
+                Expression caseBody = parseStatementOrBlock();
+                matchOptional(Token.Type.BREAK);
+                matchOptional(Token.Type.SEMICOLON);
+                cases.add(new SwitchStatement.CaseClause(caseValue, caseBody));
+            } else if (match(Token.Type.DEFAULT)) {
+                consume(Token.Type.COLON, "Expected ':' after 'default'");
+                defaultCase = parseStatementOrBlock();
+                matchOptional(Token.Type.BREAK);
+                matchOptional(Token.Type.SEMICOLON);
+            } else {
+                throw error(peek(), "Expected 'case' or 'default' in switch statement");
+            }
+        }
+        
+        consume(Token.Type.RBRACE, "Expected '}' after switch body");
+        
+        return new SwitchStatement(expression, cases, defaultCase);
+    }
+    
+    private Expression parseForOfStatement() {
+        consume(Token.Type.LPAREN, "Expected '(' after 'for'");
+        Token itemName = consume(Token.Type.IDENTIFIER, "Expected variable name in for loop");
+        consume(Token.Type.OF, "Expected 'of' in for-of loop");
+        Expression iterable = parseExpression();
+        consume(Token.Type.RPAREN, "Expected ')' after for-of header");
+        
+        Expression body = parseStatementOrBlock();
+        
+        return new ForOfStatement(itemName.getLexeme(), iterable, body);
+    }
+    
+    private Expression parseStatementOrBlock() {
+        if (match(Token.Type.LBRACE)) {
+            BlockExpr block = new BlockExpr();
+            
+            while (!check(Token.Type.RBRACE) && !isAtEnd()) {
+                if (match(Token.Type.LET)) {
+                    Expression letExpr = parseLetDeclaration(block);
+                    if (letExpr != null) {
+                        block.addExpression(letExpr);
+                    }
+                } else if (match(Token.Type.IF)) {
+                    block.addExpression(parseIfStatement());
+                } else if (match(Token.Type.SWITCH)) {
+                    block.addExpression(parseSwitchStatement());
+                } else if (match(Token.Type.FOR)) {
+                    block.addExpression(parseForOfStatement());
+                } else if (match(Token.Type.RETURN)) {
+                    Expression returnExpr = parseExpression();
+                    matchOptional(Token.Type.SEMICOLON);
+                    block.addExpression(returnExpr);
+                    break;
+                } else {
+                    block.addExpression(parseExpression());
+                    matchOptional(Token.Type.SEMICOLON);
+                }
+            }
+            
+            consume(Token.Type.RBRACE, "Expected '}' after block");
+            
+            java.util.List<Expression> exprs = block.getExpressions();
+            if (exprs.isEmpty()) {
+                return new LiteralExpr(null);
+            }
+            if (exprs.size() == 1) {
+                return exprs.get(0);
+            }
+            return block;
+        } else {
+            Expression expr = parseExpression();
+            matchOptional(Token.Type.SEMICOLON);
+            return expr;
+        }
     }
 }

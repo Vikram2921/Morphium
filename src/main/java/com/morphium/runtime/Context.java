@@ -19,23 +19,36 @@ public class Context {
 
     public Context(HostFunctionRegistry functionRegistry) {
         this.parent = null;
-        this.variables = new HashMap<>();
-        this.userFunctions = new HashMap<>();
-        this.exports = new HashMap<>();
+        this.variables = new HashMap<>(16);
+        this.userFunctions = new HashMap<>(8);
+        this.exports = new HashMap<>(8);
         this.functionRegistry = functionRegistry;
         this.isGlobal = true;
     }
 
     public Context(Context parent) {
         this.parent = parent;
-        this.variables = new HashMap<>();
-        this.userFunctions = new HashMap<>();
+        this.variables = new HashMap<>(8);
+        this.userFunctions = new HashMap<>(4);
         this.exports = parent.exports; // Share exports with parent
+        this.functionRegistry = parent.functionRegistry;
+        this.isGlobal = false;
+    }
+    
+    public Context(Context parent, int expectedVarCount) {
+        this.parent = parent;
+        this.variables = new HashMap<>(expectedVarCount);
+        this.userFunctions = new HashMap<>(2);
+        this.exports = parent.exports;
         this.functionRegistry = parent.functionRegistry;
         this.isGlobal = false;
     }
 
     public void define(String name, JsonNode value) {
+        variables.put(name, value);
+    }
+    
+    public void redefine(String name, JsonNode value) {
         variables.put(name, value);
     }
 

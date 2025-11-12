@@ -8,6 +8,7 @@ import java.util.Map;
 
 public class HostFunctionRegistry {
     private final Map<String, HostFunction> functions = new HashMap<>();
+    private Logger logger;
 
     public void register(String namespace, String name, HostFunction function) {
         String fullName = namespace.isEmpty() ? name : namespace + "." + name;
@@ -28,5 +29,13 @@ public class HostFunctionRegistry {
 
     public boolean has(String name) {
         return functions.containsKey(name);
+    }
+    
+    public void setLogger(Logger logger) {
+        this.logger = logger;
+    }
+    
+    public Logger getLogger() {
+        return logger;
     }
 }

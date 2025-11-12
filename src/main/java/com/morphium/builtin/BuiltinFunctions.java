@@ -10,67 +10,102 @@ import com.morphium.util.JsonUtil;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 public class BuiltinFunctions {
     private static final ObjectMapper mapper = new ObjectMapper();
+    
+    private static final Map<String, StreamFunction> STREAM_FUNCTIONS = new HashMap<>();
+    private static final Map<String, EagerFunction> EAGER_FUNCTIONS = new HashMap<>();
+    
+    static {
+        // Stream functions that need unevaluated expressions
+        STREAM_FUNCTIONS.put("map", BuiltinFunctions::map);
+        STREAM_FUNCTIONS.put("filter", BuiltinFunctions::filter);
+        STREAM_FUNCTIONS.put("reduce", BuiltinFunctions::reduce);
+        STREAM_FUNCTIONS.put("flatMap", BuiltinFunctions::flatMap);
+        STREAM_FUNCTIONS.put("forEach", BuiltinFunctions::forEach);
+        STREAM_FUNCTIONS.put("anyMatch", BuiltinFunctions::anyMatch);
+        STREAM_FUNCTIONS.put("allMatch", BuiltinFunctions::allMatch);
+        STREAM_FUNCTIONS.put("noneMatch", BuiltinFunctions::noneMatch);
+        STREAM_FUNCTIONS.put("findFirst", BuiltinFunctions::findFirst);
+        STREAM_FUNCTIONS.put("count", BuiltinFunctions::count);
+        STREAM_FUNCTIONS.put("distinct", BuiltinFunctions::distinct);
+        STREAM_FUNCTIONS.put("sorted", BuiltinFunctions::sorted);
+        STREAM_FUNCTIONS.put("skip", BuiltinFunctions::skip);
+        STREAM_FUNCTIONS.put("limit", BuiltinFunctions::limit);
+        STREAM_FUNCTIONS.put("peek", BuiltinFunctions::peek);
+        STREAM_FUNCTIONS.put("groupBy", BuiltinFunctions::groupBy);
+        STREAM_FUNCTIONS.put("partition", BuiltinFunctions::partition);
+        STREAM_FUNCTIONS.put("sum", BuiltinFunctions::sum);
+        STREAM_FUNCTIONS.put("avg", BuiltinFunctions::avg);
+        STREAM_FUNCTIONS.put("min", BuiltinFunctions::min);
+        STREAM_FUNCTIONS.put("max", BuiltinFunctions::max);
+        STREAM_FUNCTIONS.put("runMorph", BuiltinFunctions::runMorph);
+        
+        // Eager functions that evaluate args first
+        EAGER_FUNCTIONS.put("merge", BuiltinFunctions::merge);
+        EAGER_FUNCTIONS.put("pluck", BuiltinFunctions::pluck);
+        EAGER_FUNCTIONS.put("indexBy", BuiltinFunctions::indexBy);
+        EAGER_FUNCTIONS.put("exists", BuiltinFunctions::exists);
+        EAGER_FUNCTIONS.put("len", BuiltinFunctions::len);
+        EAGER_FUNCTIONS.put("now", BuiltinFunctions::now);
+        EAGER_FUNCTIONS.put("formatDate", BuiltinFunctions::formatDate);
+        EAGER_FUNCTIONS.put("split", BuiltinFunctions::split);
+        EAGER_FUNCTIONS.put("join", BuiltinFunctions::join);
+        EAGER_FUNCTIONS.put("upper", BuiltinFunctions::upper);
+        EAGER_FUNCTIONS.put("lower", BuiltinFunctions::lower);
+        EAGER_FUNCTIONS.put("trim", BuiltinFunctions::trim);
+        EAGER_FUNCTIONS.put("replace", BuiltinFunctions::replace);
+        EAGER_FUNCTIONS.put("toNumber", BuiltinFunctions::toNumber);
+        EAGER_FUNCTIONS.put("toString", BuiltinFunctions::toStringFunc);
+        EAGER_FUNCTIONS.put("toBool", BuiltinFunctions::toBool);
+        EAGER_FUNCTIONS.put("jsonParse", BuiltinFunctions::jsonParse);
+        EAGER_FUNCTIONS.put("jsonStringify", BuiltinFunctions::jsonStringify);
+        EAGER_FUNCTIONS.put("get", BuiltinFunctions::get);
+        EAGER_FUNCTIONS.put("set", BuiltinFunctions::set);
+        EAGER_FUNCTIONS.put("reverse", BuiltinFunctions::reverse);
+        EAGER_FUNCTIONS.put("concat", BuiltinFunctions::concat);
+        EAGER_FUNCTIONS.put("slice", BuiltinFunctions::slice);
+        EAGER_FUNCTIONS.put("keys", BuiltinFunctions::keys);
+        EAGER_FUNCTIONS.put("values", BuiltinFunctions::values);
+        EAGER_FUNCTIONS.put("entries", BuiltinFunctions::entries);
+        
+        // Error handling and logging
+        EAGER_FUNCTIONS.put("error", BuiltinFunctions::error);
+        EAGER_FUNCTIONS.put("log", BuiltinFunctions::log);
+        EAGER_FUNCTIONS.put("logInfo", BuiltinFunctions::logInfo);
+        EAGER_FUNCTIONS.put("logWarn", BuiltinFunctions::logWarn);
+        EAGER_FUNCTIONS.put("logError", BuiltinFunctions::logError);
+        EAGER_FUNCTIONS.put("logDebug", BuiltinFunctions::logDebug);
+    }
 
     public static JsonNode call(String name, java.util.List<Expression> argExprs, Context context) {
-        switch (name) {
-            case "map": return map(argExprs, context);
-            case "filter": return filter(argExprs, context);
-            case "reduce": return reduce(argExprs, context);
-            case "flatMap": return flatMap(argExprs, context);
-            case "forEach": return forEach(argExprs, context);
-            case "anyMatch": return anyMatch(argExprs, context);
-            case "allMatch": return allMatch(argExprs, context);
-            case "noneMatch": return noneMatch(argExprs, context);
-            case "findFirst": return findFirst(argExprs, context);
-            case "count": return count(argExprs, context);
-            case "distinct": return distinct(argExprs, context);
-            case "sorted": return sorted(argExprs, context);
-            case "skip": return skip(argExprs, context);
-            case "limit": return limit(argExprs, context);
-            case "peek": return peek(argExprs, context);
-            case "groupBy": return groupBy(argExprs, context);
-            case "partition": return partition(argExprs, context);
-            case "sum": return sum(argExprs, context);
-            case "avg": return avg(argExprs, context);
-            case "min": return min(argExprs, context);
-            case "max": return max(argExprs, context);
-            case "runMorph": return runMorph(argExprs, context);
+        StreamFunction streamFunc = STREAM_FUNCTIONS.get(name);
+        if (streamFunc != null) {
+            return streamFunc.apply(argExprs, context);
         }
         
-        JsonNode[] args = evaluateArgs(argExprs, context);
-        switch (name) {
-            case "merge": return merge(args);
-            case "pluck": return pluck(args);
-            case "indexBy": return indexBy(args);
-            case "exists": return exists(args);
-            case "len": return len(args);
-            case "now": return now(args);
-            case "formatDate": return formatDate(args);
-            case "split": return split(args);
-            case "join": return join(args);
-            case "upper": return upper(args);
-            case "lower": return lower(args);
-            case "trim": return trim(args);
-            case "replace": return replace(args);
-            case "toNumber": return toNumber(args);
-            case "toString": return toStringFunc(args);
-            case "toBool": return toBool(args);
-            case "jsonParse": return jsonParse(args);
-            case "jsonStringify": return jsonStringify(args);
-            case "get": return get(args);
-            case "set": return set(args);
-            case "reverse": return reverse(args);
-            case "concat": return concat(args);
-            case "slice": return slice(args);
-            case "keys": return keys(args);
-            case "values": return values(args);
-            case "entries": return entries(args);
-            default: return null;
+        EagerFunction eagerFunc = EAGER_FUNCTIONS.get(name);
+        if (eagerFunc != null) {
+            JsonNode[] args = evaluateArgs(argExprs, context);
+            return eagerFunc.apply(args, context);
         }
+        
+        return null;
+    }
+
+    @FunctionalInterface
+    private interface StreamFunction {
+        JsonNode apply(java.util.List<Expression> argExprs, Context context);
+    }
+    
+    @FunctionalInterface
+    private interface EagerFunction {
+        JsonNode apply(JsonNode[] args, Context context);
     }
 
     private static JsonNode[] evaluateArgs(java.util.List<Expression> argExprs, Context context) {
@@ -91,9 +126,9 @@ public class BuiltinFunctions {
         Expression mapExpr = argExprs.get(2);
         
         ArrayNode result = JsonUtil.createArray();
+        Context itemContext = new Context(context, 2);
         for (JsonNode item : arrayArg) {
-            Context itemContext = new Context(context);
-            itemContext.define(itemName, item);
+            itemContext.redefine(itemName, item);
             JsonNode mapped = mapExpr.evaluate(itemContext);
             result.add(mapped);
         }
@@ -111,9 +146,9 @@ public class BuiltinFunctions {
         Expression predicateExpr = argExprs.get(2);
         
         ArrayNode result = JsonUtil.createArray();
+        Context itemContext = new Context(context, 2);
         for (JsonNode item : arrayArg) {
-            Context itemContext = new Context(context);
-            itemContext.define(itemName, item);
+            itemContext.redefine(itemName, item);
             JsonNode predicate = predicateExpr.evaluate(itemContext);
             if (isTruthy(predicate)) {
                 result.add(item);
@@ -135,10 +170,10 @@ public class BuiltinFunctions {
         Expression reduceExpr = argExprs.get(4);
         
         JsonNode accumulator = initValue;
+        Context reduceContext = new Context(context, 3);
         for (JsonNode item : arrayArg) {
-            Context reduceContext = new Context(context);
-            reduceContext.define(accName, accumulator);
-            reduceContext.define(itemName, item);
+            reduceContext.redefine(accName, accumulator);
+            reduceContext.redefine(itemName, item);
             accumulator = reduceExpr.evaluate(reduceContext);
         }
         
@@ -146,6 +181,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode merge(JsonNode[] args) {
+        return merge(args, null);
+    }
+    
+    private static JsonNode merge(JsonNode[] args, Context context) {
         ObjectNode result = JsonUtil.createObject();
         for (JsonNode arg : args) {
             if (arg.isObject()) {
@@ -160,6 +199,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode pluck(JsonNode[] args) {
+        return pluck(args, null);
+    }
+    
+    private static JsonNode pluck(JsonNode[] args, Context context) {
         if (args.length < 2) return JsonUtil.createArray();
         JsonNode array = args[0];
         String key = args[1].asText();
@@ -176,6 +219,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode indexBy(JsonNode[] args) {
+        return indexBy(args, null);
+    }
+    
+    private static JsonNode indexBy(JsonNode[] args, Context context) {
         if (args.length < 2) return JsonUtil.createObject();
         JsonNode array = args[0];
         String key = args[1].asText();
@@ -193,12 +240,20 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode exists(JsonNode[] args) {
+        return exists(args, null);
+    }
+    
+    private static JsonNode exists(JsonNode[] args, Context context) {
         if (args.length == 0) return BooleanNode.FALSE;
         JsonNode val = args[0];
         return BooleanNode.valueOf(val != null && !val.isNull());
     }
 
     private static JsonNode len(JsonNode[] args) {
+        return len(args, null);
+    }
+    
+    private static JsonNode len(JsonNode[] args, Context context) {
         if (args.length == 0) return IntNode.valueOf(0);
         JsonNode val = args[0];
         if (val.isArray()) {
@@ -211,10 +266,18 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode now(JsonNode[] args) {
+        return now(args, null);
+    }
+    
+    private static JsonNode now(JsonNode[] args, Context context) {
         return TextNode.valueOf(Instant.now().toString());
     }
 
     private static JsonNode formatDate(JsonNode[] args) {
+        return formatDate(args, null);
+    }
+    
+    private static JsonNode formatDate(JsonNode[] args, Context context) {
         if (args.length < 2) return TextNode.valueOf("");
         String dateStr = args[0].asText();
         String format = args[1].asText();
@@ -229,6 +292,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode split(JsonNode[] args) {
+        return split(args, null);
+    }
+    
+    private static JsonNode split(JsonNode[] args, Context context) {
         if (args.length < 2) return JsonUtil.createArray();
         String str = args[0].asText();
         String separator = args[1].asText();
@@ -242,6 +309,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode join(JsonNode[] args) {
+        return join(args, null);
+    }
+    
+    private static JsonNode join(JsonNode[] args, Context context) {
         if (args.length < 2) return TextNode.valueOf("");
         JsonNode array = args[0];
         String separator = args[1].asText();
@@ -259,21 +330,37 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode upper(JsonNode[] args) {
+        return upper(args, null);
+    }
+    
+    private static JsonNode upper(JsonNode[] args, Context context) {
         if (args.length == 0) return TextNode.valueOf("");
         return TextNode.valueOf(args[0].asText().toUpperCase());
     }
 
     private static JsonNode lower(JsonNode[] args) {
+        return lower(args, null);
+    }
+    
+    private static JsonNode lower(JsonNode[] args, Context context) {
         if (args.length == 0) return TextNode.valueOf("");
         return TextNode.valueOf(args[0].asText().toLowerCase());
     }
 
     private static JsonNode trim(JsonNode[] args) {
+        return trim(args, null);
+    }
+    
+    private static JsonNode trim(JsonNode[] args, Context context) {
         if (args.length == 0) return TextNode.valueOf("");
         return TextNode.valueOf(args[0].asText().trim());
     }
 
     private static JsonNode replace(JsonNode[] args) {
+        return replace(args, null);
+    }
+    
+    private static JsonNode replace(JsonNode[] args, Context context) {
         if (args.length < 3) return TextNode.valueOf("");
         String str = args[0].asText();
         String target = args[1].asText();
@@ -282,6 +369,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode toNumber(JsonNode[] args) {
+        return toNumber(args, null);
+    }
+    
+    private static JsonNode toNumber(JsonNode[] args, Context context) {
         if (args.length == 0) return IntNode.valueOf(0);
         JsonNode val = args[0];
         if (val.isNumber()) return val;
@@ -297,16 +388,28 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode toStringFunc(JsonNode[] args) {
+        return toStringFunc(args, null);
+    }
+    
+    private static JsonNode toStringFunc(JsonNode[] args, Context context) {
         if (args.length == 0) return TextNode.valueOf("");
         return TextNode.valueOf(args[0].asText());
     }
 
     private static JsonNode toBool(JsonNode[] args) {
+        return toBool(args, null);
+    }
+    
+    private static JsonNode toBool(JsonNode[] args, Context context) {
         if (args.length == 0) return BooleanNode.FALSE;
         return BooleanNode.valueOf(isTruthy(args[0]));
     }
 
     private static JsonNode jsonParse(JsonNode[] args) {
+        return jsonParse(args, null);
+    }
+    
+    private static JsonNode jsonParse(JsonNode[] args, Context context) {
         if (args.length == 0) return NullNode.getInstance();
         try {
             return mapper.readTree(args[0].asText());
@@ -316,6 +419,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode jsonStringify(JsonNode[] args) {
+        return jsonStringify(args, null);
+    }
+    
+    private static JsonNode jsonStringify(JsonNode[] args, Context context) {
         if (args.length == 0) return TextNode.valueOf("null");
         try {
             return TextNode.valueOf(mapper.writeValueAsString(args[0]));
@@ -325,6 +432,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode get(JsonNode[] args) {
+        return get(args, null);
+    }
+    
+    private static JsonNode get(JsonNode[] args, Context context) {
         if (args.length < 2) return NullNode.getInstance();
         JsonNode obj = args[0];
         String path = args[1].asText();
@@ -339,6 +450,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode set(JsonNode[] args) {
+        return set(args, null);
+    }
+    
+    private static JsonNode set(JsonNode[] args, Context context) {
         if (args.length < 3) return args.length > 0 ? args[0] : NullNode.getInstance();
         
         JsonNode obj = args[0];
@@ -387,9 +502,9 @@ public class BuiltinFunctions {
         Expression mapExpr = argExprs.get(2);
         
         ArrayNode result = JsonUtil.createArray();
+        Context itemContext = new Context(context, 2);
         for (JsonNode item : arrayArg) {
-            Context itemContext = new Context(context);
-            itemContext.define(itemName, item);
+            itemContext.redefine(itemName, item);
             JsonNode mapped = mapExpr.evaluate(itemContext);
             if (mapped.isArray()) {
                 for (JsonNode subItem : mapped) {
@@ -412,9 +527,9 @@ public class BuiltinFunctions {
         String itemName = argExprs.get(1).evaluate(context).asText();
         Expression forEachExpr = argExprs.get(2);
         
+        Context itemContext = new Context(context, 2);
         for (JsonNode item : arrayArg) {
-            Context itemContext = new Context(context);
-            itemContext.define(itemName, item);
+            itemContext.redefine(itemName, item);
             forEachExpr.evaluate(itemContext);
         }
         
@@ -430,9 +545,9 @@ public class BuiltinFunctions {
         String itemName = argExprs.get(1).evaluate(context).asText();
         Expression predicateExpr = argExprs.get(2);
         
+        Context itemContext = new Context(context, 2);
         for (JsonNode item : arrayArg) {
-            Context itemContext = new Context(context);
-            itemContext.define(itemName, item);
+            itemContext.redefine(itemName, item);
             JsonNode predicate = predicateExpr.evaluate(itemContext);
             if (isTruthy(predicate)) {
                 return BooleanNode.TRUE;
@@ -451,9 +566,9 @@ public class BuiltinFunctions {
         String itemName = argExprs.get(1).evaluate(context).asText();
         Expression predicateExpr = argExprs.get(2);
         
+        Context itemContext = new Context(context, 2);
         for (JsonNode item : arrayArg) {
-            Context itemContext = new Context(context);
-            itemContext.define(itemName, item);
+            itemContext.redefine(itemName, item);
             JsonNode predicate = predicateExpr.evaluate(itemContext);
             if (!isTruthy(predicate)) {
                 return BooleanNode.FALSE;
@@ -472,9 +587,9 @@ public class BuiltinFunctions {
         String itemName = argExprs.get(1).evaluate(context).asText();
         Expression predicateExpr = argExprs.get(2);
         
+        Context itemContext = new Context(context, 2);
         for (JsonNode item : arrayArg) {
-            Context itemContext = new Context(context);
-            itemContext.define(itemName, item);
+            itemContext.redefine(itemName, item);
             JsonNode predicate = predicateExpr.evaluate(itemContext);
             if (isTruthy(predicate)) {
                 return BooleanNode.FALSE;
@@ -493,9 +608,9 @@ public class BuiltinFunctions {
         String itemName = argExprs.get(1).evaluate(context).asText();
         Expression predicateExpr = argExprs.get(2);
         
+        Context itemContext = new Context(context, 2);
         for (JsonNode item : arrayArg) {
-            Context itemContext = new Context(context);
-            itemContext.define(itemName, item);
+            itemContext.redefine(itemName, item);
             JsonNode predicate = predicateExpr.evaluate(itemContext);
             if (isTruthy(predicate)) {
                 return item;
@@ -519,9 +634,9 @@ public class BuiltinFunctions {
         Expression predicateExpr = argExprs.get(2);
         
         int count = 0;
+        Context itemContext = new Context(context, 2);
         for (JsonNode item : arrayArg) {
-            Context itemContext = new Context(context);
-            itemContext.define(itemName, item);
+            itemContext.redefine(itemName, item);
             JsonNode predicate = predicateExpr.evaluate(itemContext);
             if (isTruthy(predicate)) {
                 count++;
@@ -766,6 +881,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode reverse(JsonNode[] args) {
+        return reverse(args, null);
+    }
+    
+    private static JsonNode reverse(JsonNode[] args, Context context) {
         if (args.length == 0) return JsonUtil.createArray();
         JsonNode array = args[0];
         if (!array.isArray()) return array;
@@ -784,6 +903,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode concat(JsonNode[] args) {
+        return concat(args, null);
+    }
+    
+    private static JsonNode concat(JsonNode[] args, Context context) {
         ArrayNode result = JsonUtil.createArray();
         for (JsonNode arg : args) {
             if (arg.isArray()) {
@@ -798,6 +921,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode slice(JsonNode[] args) {
+        return slice(args, null);
+    }
+    
+    private static JsonNode slice(JsonNode[] args, Context context) {
         if (args.length < 2) return JsonUtil.createArray();
         JsonNode array = args[0];
         if (!array.isArray()) return array;
@@ -818,6 +945,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode keys(JsonNode[] args) {
+        return keys(args, null);
+    }
+    
+    private static JsonNode keys(JsonNode[] args, Context context) {
         if (args.length == 0) return JsonUtil.createArray();
         JsonNode obj = args[0];
         if (!obj.isObject()) return JsonUtil.createArray();
@@ -832,6 +963,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode values(JsonNode[] args) {
+        return values(args, null);
+    }
+    
+    private static JsonNode values(JsonNode[] args, Context context) {
         if (args.length == 0) return JsonUtil.createArray();
         JsonNode obj = args[0];
         if (!obj.isObject()) return JsonUtil.createArray();
@@ -846,6 +981,10 @@ public class BuiltinFunctions {
     }
 
     private static JsonNode entries(JsonNode[] args) {
+        return entries(args, null);
+    }
+    
+    private static JsonNode entries(JsonNode[] args, Context context) {
         if (args.length == 0) return JsonUtil.createArray();
         JsonNode obj = args[0];
         if (!obj.isObject()) return JsonUtil.createArray();
@@ -884,5 +1023,103 @@ public class BuiltinFunctions {
         } catch (Exception e) {
             throw new RuntimeException("Failed to run morph file " + morphFile + ": " + e.getMessage(), e);
         }
+    }
+    
+    // Error handling and logging functions
+    
+    private static JsonNode error(JsonNode[] args) {
+        return error(args, null);
+    }
+    
+    private static JsonNode error(JsonNode[] args, Context context) {
+        if (args.length == 0) {
+            throw new com.morphium.core.MorphiumException("Error thrown in script");
+        }
+        String message = args[0].asText();
+        throw new com.morphium.core.MorphiumException(message);
+    }
+    
+    private static JsonNode log(JsonNode[] args) {
+        return log(args, null);
+    }
+    
+    private static JsonNode log(JsonNode[] args, Context context) {
+        if (context != null && context.getFunctionRegistry() != null) {
+            com.morphium.runtime.Logger logger = context.getFunctionRegistry().getLogger();
+            if (logger != null) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < args.length; i++) {
+                    if (i > 0) sb.append(" ");
+                    sb.append(args[i].toString());
+                }
+                logger.log(com.morphium.runtime.Logger.Level.INFO, sb.toString());
+                return args.length > 0 ? args[0] : NullNode.getInstance();
+            }
+        }
+        // Fallback to System.out
+        for (int i = 0; i < args.length; i++) {
+            if (i > 0) System.out.print(" ");
+            System.out.print(args[i].toString());
+        }
+        System.out.println();
+        return args.length > 0 ? args[0] : NullNode.getInstance();
+    }
+    
+    private static JsonNode logInfo(JsonNode[] args) {
+        return logInfo(args, null);
+    }
+    
+    private static JsonNode logInfo(JsonNode[] args, Context context) {
+        logWithLevel(com.morphium.runtime.Logger.Level.INFO, args, context);
+        return args.length > 0 ? args[0] : NullNode.getInstance();
+    }
+    
+    private static JsonNode logWarn(JsonNode[] args) {
+        return logWarn(args, null);
+    }
+    
+    private static JsonNode logWarn(JsonNode[] args, Context context) {
+        logWithLevel(com.morphium.runtime.Logger.Level.WARN, args, context);
+        return args.length > 0 ? args[0] : NullNode.getInstance();
+    }
+    
+    private static JsonNode logError(JsonNode[] args) {
+        return logError(args, null);
+    }
+    
+    private static JsonNode logError(JsonNode[] args, Context context) {
+        logWithLevel(com.morphium.runtime.Logger.Level.ERROR, args, context);
+        return args.length > 0 ? args[0] : NullNode.getInstance();
+    }
+    
+    private static JsonNode logDebug(JsonNode[] args) {
+        return logDebug(args, null);
+    }
+    
+    private static JsonNode logDebug(JsonNode[] args, Context context) {
+        logWithLevel(com.morphium.runtime.Logger.Level.DEBUG, args, context);
+        return args.length > 0 ? args[0] : NullNode.getInstance();
+    }
+    
+    private static void logWithLevel(com.morphium.runtime.Logger.Level level, JsonNode[] args, Context context) {
+        if (context != null && context.getFunctionRegistry() != null) {
+            com.morphium.runtime.Logger logger = context.getFunctionRegistry().getLogger();
+            if (logger != null) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < args.length; i++) {
+                    if (i > 0) sb.append(" ");
+                    sb.append(args[i].toString());
+                }
+                logger.log(level, sb.toString());
+                return;
+            }
+        }
+        // Fallback to System.out/err
+        String prefix = "[" + level + "] ";
+        for (int i = 0; i < args.length; i++) {
+            if (i > 0) System.out.print(" ");
+            System.out.print(args[i].toString());
+        }
+        System.out.println();
     }
 }
