@@ -1,5 +1,0 @@
-// Example 2: Map array items and compute totals
-{
-  items: map(input.items, "it", { id: it.id, total: it.qty * it.price }),
-  grandTotal: reduce(map(input.items, "it", it.qty * it.price), "acc", "v", 0, acc + v)
-}
