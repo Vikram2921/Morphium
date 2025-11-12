@@ -12,17 +12,17 @@ Welcome to the complete interactive documentation for Morphium DSL! This guide c
 - [Syntax Overview](03-syntax-overview.md) - Complete syntax reference
 
 ### Core Features
-- [Variables and Scope](04-variables-scope.md)
-- [Data Types](05-data-types.md)
-- [Operators](06-operators.md)
-- [JSON Path Access](07-json-path.md)
+- [Variables and Scope](04-variables-scope.md) ✅
+- [Data Types](05-data-types.md) ✅
+- [Operators](06-operators.md) ✅
+- [JSON Path Access](07-json-path.md) ✅
 
 ### Control Flow
-- [If-Else Statements](08-if-else.md)
-- [Switch Statements](09-switch.md)
-- [For-Of Loops](10-for-of.md)
-- [For-In Loops](11-for-in.md)
-- [Break & Continue](12-break-continue.md)
+- [If-Else Statements](08-if-else.md) ✅
+- [Switch Statements](09-switch.md) ✅
+- [For-Of Loops](10-for-of.md) ✅
+- [For-In Loops](11-for-in.md) ✅
+- [Break & Continue](12-break-continue.md) ✅
 
 ### Functions
 
@@ -89,8 +89,8 @@ Welcome to the complete interactive documentation for Morphium DSL! This guide c
 
 #### Advanced
 - [runMorph()](functions/runMorph.md) - Run nested transformation
-- [error()](functions/error.md) - Throw custom error
-- [log(), logInfo(), logWarn(), logError(), logDebug()](functions/logging.md) - Logging functions
+- [error()](functions/error.md) - Throw custom error ✅
+- [log(), logInfo(), logWarn(), logError(), logDebug()](functions/logging.md) - Logging functions ✅
 
 ### Advanced Topics
 - [User-Defined Functions](13-user-functions.md)
