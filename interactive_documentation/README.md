@@ -93,22 +93,22 @@ Welcome to the complete interactive documentation for Morphium DSL! This guide c
 - [log(), logInfo(), logWarn(), logError(), logDebug()](functions/logging.md) ✅ - Logging functions
 
 ### Advanced Topics
-- [User-Defined Functions](13-user-functions.md)
-- [Module System](14-modules.md)
-- [Dynamic Imports](15-dynamic-imports.md)
-- [Error Handling](16-error-handling.md)
-- [Logging](17-logging.md)
-- [Performance Tips](18-performance.md)
+- [User-Defined Functions](13-user-functions.md) ✅
+- [Module System](14-modules.md) ✅
+- [Dynamic Imports](15-dynamic-imports.md) ✅
+- [Error Handling](16-error-handling.md) ✅
+- [Logging](17-logging.md) ✅
+- [Performance Tips](18-performance.md) ✅
 
 ### Integration
-- [Java API](19-java-api.md)
-- [Custom Functions](20-custom-functions.md)
-- [Custom Logger](21-custom-logger.md)
+- [Java API](19-java-api.md) ✅
+- [Custom Functions](20-custom-functions.md) ✅
+- [Custom Logger](21-custom-logger.md) ✅
 
 ### Examples
-- [Real-World Examples](22-real-world-examples.md)
-- [Common Patterns](23-common-patterns.md)
-- [Migration Guide](24-migration-guide.md)
+- [Real-World Examples](22-real-world-examples.md) ✅
+- [Common Patterns](23-common-patterns.md) ✅
+- [Migration Guide](24-migration-guide.md) ✅
 
 ---
 
