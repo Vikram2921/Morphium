@@ -1,8 +1,7 @@
 package com.morphium.parser.ast;
 
-import com.fasterxml.jackson.databind.node.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.morphium.runtime.Context;
 
 public class LetStatement implements Expression {
@@ -29,6 +28,6 @@ public class LetStatement implements Expression {
         
         // Otherwise just update the parent context
         context.define(name, val);
-        return com.google.gson.NullNode.getInstance();
+        return NullNode.getInstance();
     }
 }

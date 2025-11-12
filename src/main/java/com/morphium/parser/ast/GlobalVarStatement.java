@@ -1,8 +1,7 @@
 package com.morphium.parser.ast;
 
-import com.fasterxml.jackson.databind.node.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.morphium.runtime.Context;
 
 public class GlobalVarStatement implements Expression {
@@ -18,7 +17,7 @@ public class GlobalVarStatement implements Expression {
     public JsonNode evaluate(Context context) {
         JsonNode val = value.evaluate(context);
         context.defineGlobal(name, val);
-        return com.google.gson.NullNode.getInstance();
+        return NullNode.getInstance();
     }
 
     public String getName() {

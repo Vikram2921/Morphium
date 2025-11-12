@@ -36,7 +36,7 @@ public class MemberAccessExpr implements Expression {
             if (propElement.isValueNode() && propElement.isNumber()) {
                 int index = propElement.asInt();
                 if (obj.isArray()) {
-                    ArrayNode arr = obj.asJsonArray();
+                    ArrayNode arr = (ArrayNode) obj;
                     if (index >= 0 && index < arr.size()) {
                         return arr.get(index);
                     }
@@ -51,7 +51,7 @@ public class MemberAccessExpr implements Expression {
         }
 
         if (obj.isObject()) {
-            ObjectNode jsonObj = obj.asJsonObject();
+            ObjectNode jsonObj = (ObjectNode) obj;
             if (jsonObj.has(propName)) {
                 return jsonObj.get(propName);
             }

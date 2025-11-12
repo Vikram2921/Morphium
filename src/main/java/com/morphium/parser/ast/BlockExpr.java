@@ -1,8 +1,7 @@
 package com.morphium.parser.ast;
 
-import com.fasterxml.jackson.databind.node.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.morphium.runtime.Context;
 
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ public class BlockExpr implements Expression {
     }
 
     public void addExpression(Expression expr) {
-        expressions.set(expr);
+        expressions.add(expr);
     }
 
     @Override
@@ -42,7 +41,7 @@ public class BlockExpr implements Expression {
         
         // If all expressions were declarations, return the last one
         // Otherwise return the last non-declaration result
-        return result != null ? result : com.google.gson.NullNode.getInstance();
+        return result != null ? result : NullNode.getInstance();
     }
 
     public List<Expression> getExpressions() {
