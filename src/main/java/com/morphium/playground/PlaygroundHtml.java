@@ -8,6 +8,9 @@ public class PlaygroundHtml {
 "    <meta charset=\"UTF-8\">\n" +
 "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
 "    <title>Morphium Playground</title>\n" +
+"    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css\">\n" +
+"    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css\">\n" +
+"    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material.min.css\">\n" +
 "    <style>\n" +
 "        * { margin: 0; padding: 0; box-sizing: border-box; }\n" +
 "        body {\n" +
@@ -60,6 +63,18 @@ public class PlaygroundHtml {
 "            font-weight: 600;\n" +
 "            color: #333;\n" +
 "        }\n" +
+"        .auto-transform-toggle {\n" +
+"            display: flex;\n" +
+"            align-items: center;\n" +
+"            gap: 8px;\n" +
+"            font-size: 0.9em;\n" +
+"            color: #666;\n" +
+"        }\n" +
+"        .auto-transform-toggle input[type=\"checkbox\"] {\n" +
+"            width: 18px;\n" +
+"            height: 18px;\n" +
+"            cursor: pointer;\n" +
+"        }\n" +
 "        .editor-container {\n" +
 "            flex: 1;\n" +
 "            border: 2px solid #e0e0e0;\n" +
@@ -67,33 +82,27 @@ public class PlaygroundHtml {
 "            overflow: hidden;\n" +
 "            position: relative;\n" +
 "        }\n" +
-"        textarea, .output-area {\n" +
+"        .CodeMirror {\n" +
+"            height: 400px;\n" +
+"            font-size: 14px;\n" +
+"            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;\n" +
+"        }\n" +
+"        .transform-section .editor-container .CodeMirror {\n" +
+"            height: 300px;\n" +
+"        }\n" +
+"        .output-area {\n" +
 "            width: 100%;\n" +
 "            height: 400px;\n" +
 "            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;\n" +
 "            font-size: 14px;\n" +
 "            padding: 15px;\n" +
-"            border: none;\n" +
-"            outline: none;\n" +
-"            resize: none;\n" +
-"            line-height: 1.5;\n" +
-"        }\n" +
-"        textarea {\n" +
-"            background: #f8f9fa;\n" +
-"        }\n" +
-"        .output-area {\n" +
 "            background: #1e1e1e;\n" +
 "            color: #d4d4d4;\n" +
 "            overflow: auto;\n" +
+"            border: none;\n" +
 "        }\n" +
 "        .transform-section {\n" +
 "            grid-column: 1 / -1;\n" +
-"        }\n" +
-"        .transform-section .editor-container {\n" +
-"            height: 300px;\n" +
-"        }\n" +
-"        .transform-section textarea {\n" +
-"            height: 300px;\n" +
 "        }\n" +
 "        .button-container {\n" +
 "            grid-column: 1 / -1;\n" +
@@ -204,9 +213,13 @@ public class PlaygroundHtml {
 "            <div class=\"panel transform-section\">\n" +
 "                <div class=\"panel-header\">\n" +
 "                    <span class=\"panel-title\">✨ Transform (Morphium DSL)</span>\n" +
+"                    <div class=\"auto-transform-toggle\">\n" +
+"                        <input type=\"checkbox\" id=\"autoTransform\" checked>\n" +
+"                        <label for=\"autoTransform\">Auto-transform</label>\n" +
+"                    </div>\n" +
 "                </div>\n" +
 "                <div class=\"editor-container\">\n" +
-"                    <textarea id=\"transform\" placeholder=\"Write your Morphium transform here...\" spellcheck=\"false\">{\n" +
+"                    <textarea id=\"transform\">{\n" +
 "  fullName: $.person.first + \" \" + $.person.last,\n" +
 "  age: $.person.age,\n" +
 "  email: $.person.email,\n" +
@@ -220,7 +233,7 @@ public class PlaygroundHtml {
 "                    <span class=\"panel-title\">📥 Input JSON</span>\n" +
 "                </div>\n" +
 "                <div class=\"editor-container\">\n" +
-"                    <textarea id=\"input\" placeholder=\"Enter your input JSON...\" spellcheck=\"false\">{\n" +
+"                    <textarea id=\"input\">{\n" +
 "  \"person\": {\n" +
 "    \"first\": \"John\",\n" +
 "    \"last\": \"Doe\",\n" +
@@ -236,7 +249,7 @@ public class PlaygroundHtml {
 "                    <span class=\"panel-title\">📤 Output JSON</span>\n" +
 "                </div>\n" +
 "                <div class=\"editor-container\">\n" +
-"                    <div id=\"output\" class=\"output-area\"><pre>Click \"Transform\" to see the output...</pre></div>\n" +
+"                    <div id=\"output\" class=\"output-area\"><pre>Output will appear here...</pre></div>\n" +
 "                </div>\n" +
 "            </div>\n" +
 "            \n" +
@@ -265,6 +278,8 @@ public class PlaygroundHtml {
 "            </div>\n" +
 "        </div>\n" +
 "    </div>\n" +
+"    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js\"></script>\n" +
+"    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js\"></script>\n" +
 "    " + getJavaScript() + "\n" +
 "</body>\n" +
 "</html>";
@@ -272,6 +287,58 @@ public class PlaygroundHtml {
 
     private static String getJavaScript() {
         return "<script>\n" +
+"let transformEditor, inputEditor;\n" +
+"let autoTransformTimeout = null;\n" +
+"\n" +
+"window.addEventListener('load', function() {\n" +
+"    transformEditor = CodeMirror.fromTextArea(document.getElementById('transform'), {\n" +
+"        mode: 'javascript',\n" +
+"        theme: 'material',\n" +
+"        lineNumbers: true,\n" +
+"        lineWrapping: true,\n" +
+"        indentUnit: 2,\n" +
+"        tabSize: 2,\n" +
+"        matchBrackets: true,\n" +
+"        autoCloseBrackets: true\n" +
+"    });\n" +
+"    \n" +
+"    inputEditor = CodeMirror.fromTextArea(document.getElementById('input'), {\n" +
+"        mode: {name: 'javascript', json: true},\n" +
+"        theme: 'material',\n" +
+"        lineNumbers: true,\n" +
+"        lineWrapping: true,\n" +
+"        indentUnit: 2,\n" +
+"        tabSize: 2,\n" +
+"        matchBrackets: true,\n" +
+"        autoCloseBrackets: true\n" +
+"    });\n" +
+"    \n" +
+"    transformEditor.on('change', function() {\n" +
+"        scheduleAutoTransform();\n" +
+"    });\n" +
+"    \n" +
+"    inputEditor.on('change', function() {\n" +
+"        scheduleAutoTransform();\n" +
+"    });\n" +
+"    \n" +
+"    transformEditor.setSize(null, 300);\n" +
+"    inputEditor.setSize(null, 400);\n" +
+"    \n" +
+"    transform();\n" +
+"});\n" +
+"\n" +
+"function scheduleAutoTransform() {\n" +
+"    if (!document.getElementById('autoTransform').checked) return;\n" +
+"    \n" +
+"    if (autoTransformTimeout) {\n" +
+"        clearTimeout(autoTransformTimeout);\n" +
+"    }\n" +
+"    \n" +
+"    autoTransformTimeout = setTimeout(function() {\n" +
+"        transform();\n" +
+"    }, 500);\n" +
+"}\n" +
+"\n" +
 "const examples = {\n" +
 "    basic: {\n" +
 "        transform: `{\n" +
@@ -408,16 +475,16 @@ public class PlaygroundHtml {
 "function loadExample(exampleName) {\n" +
 "    const example = examples[exampleName];\n" +
 "    if (example) {\n" +
-"        document.getElementById('transform').value = example.transform;\n" +
-"        document.getElementById('input').value = example.input;\n" +
+"        transformEditor.setValue(example.transform);\n" +
+"        inputEditor.setValue(example.input);\n" +
 "        setStatus('Example loaded: ' + exampleName, 'info');\n" +
 "        transform();\n" +
 "    }\n" +
 "}\n" +
 "\n" +
 "async function transform() {\n" +
-"    const transformText = document.getElementById('transform').value;\n" +
-"    const inputText = document.getElementById('input').value;\n" +
+"    const transformText = transformEditor.getValue();\n" +
+"    const inputText = inputEditor.getValue();\n" +
 "    const outputEl = document.getElementById('output');\n" +
 "    \n" +
 "    if (!transformText.trim()) {\n" +
@@ -460,18 +527,17 @@ public class PlaygroundHtml {
 "}\n" +
 "\n" +
 "function clearAll() {\n" +
-"    document.getElementById('transform').value = '';\n" +
-"    document.getElementById('input').value = '';\n" +
-"    document.getElementById('output').innerHTML = '<pre>Click Transform to see output...</pre>';\n" +
+"    transformEditor.setValue('');\n" +
+"    inputEditor.setValue('');\n" +
+"    document.getElementById('output').innerHTML = '<pre>Output will appear here...</pre>';\n" +
 "    setStatus('Ready to transform', 'info');\n" +
 "    document.getElementById('execTime').textContent = '';\n" +
 "}\n" +
 "\n" +
 "function formatJson() {\n" +
 "    try {\n" +
-"        const inputEl = document.getElementById('input');\n" +
-"        const parsed = JSON.parse(inputEl.value);\n" +
-"        inputEl.value = JSON.stringify(parsed, null, 2);\n" +
+"        const parsed = JSON.parse(inputEditor.getValue());\n" +
+"        inputEditor.setValue(JSON.stringify(parsed, null, 2));\n" +
 "        setStatus('JSON formatted', 'success');\n" +
 "    } catch (error) {\n" +
 "        setStatus('Invalid JSON: ' + error.message, 'error');\n" +
@@ -483,18 +549,6 @@ public class PlaygroundHtml {
 "    statusEl.textContent = message;\n" +
 "    statusEl.className = 'status-message status-' + type;\n" +
 "}\n" +
-"\n" +
-"document.getElementById('transform').addEventListener('keydown', function(e) {\n" +
-"    if (e.ctrlKey && e.key === 'Enter') {\n" +
-"        transform();\n" +
-"    }\n" +
-"});\n" +
-"\n" +
-"document.getElementById('input').addEventListener('keydown', function(e) {\n" +
-"    if (e.ctrlKey && e.key === 'Enter') {\n" +
-"        transform();\n" +
-"    }\n" +
-"});\n" +
 "</script>";
     }
 }

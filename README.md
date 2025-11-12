@@ -8,7 +8,15 @@ A JavaScript-like JSON transformation DSL for Java with user-defined functions, 
 mvn compile exec:java
 ```
 
-Open **http://localhost:8080** in your browser for a real-time playground with examples!
+Open **http://localhost:8080** in your browser for a real-time playground!
+
+### Playground Features:
+- ✨ **Auto-transform** - Real-time transformation as you type
+- 📝 **CodeMirror Editor** - Professional code editor with syntax highlighting
+- 🎨 **Beautiful UI** - Modern gradient design with dark output panel
+- 📚 **Quick Examples** - 7 pre-built examples to get started
+- ⚡ **Fast Feedback** - Execution time display and error highlighting
+- 🔄 **Format JSON** - One-click JSON formatting
 
 👉 See [PLAYGROUND.md](PLAYGROUND.md) for full playground documentation.
 
