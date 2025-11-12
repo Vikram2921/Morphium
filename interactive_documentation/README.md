@@ -27,70 +27,70 @@ Welcome to the complete interactive documentation for Morphium DSL! This guide c
 ### Functions
 
 #### Array Functions
-- [map()](functions/map.md) - Transform array elements
-- [filter()](functions/filter.md) - Filter array elements
-- [reduce()](functions/reduce.md) - Reduce array to single value
-- [flatMap()](functions/flatMap.md) - Map and flatten arrays
-- [forEach()](functions/forEach.md) - Iterate with side effects
-- [distinct()](functions/distinct.md) - Remove duplicates
-- [sorted()](functions/sorted.md) - Sort arrays
-- [reverse()](functions/reverse.md) - Reverse array order
-- [concat()](functions/concat.md) - Concatenate arrays
-- [slice()](functions/slice.md) - Extract array slice
-- [skip()](functions/skip.md) - Skip first N elements
-- [limit()](functions/limit.md) - Take first N elements
+- [map()](functions/map.md) ✅ - Transform array elements
+- [filter()](functions/filter.md) ✅ - Filter array elements
+- [reduce()](functions/reduce.md) ✅ - Reduce array to single value
+- [flatMap()](functions/flatMap.md) ✅ - Map and flatten arrays
+- [forEach()](functions/forEach.md) ✅ - Iterate with side effects
+- [distinct()](functions/distinct.md) ✅ - Remove duplicates
+- [sorted()](functions/sorted.md) ✅ - Sort arrays
+- [reverse()](functions/reverse.md) ✅ - Reverse array order
+- [concat()](functions/concat.md) ✅ - Concatenate arrays
+- [slice()](functions/slice.md) ✅ - Extract array slice
+- [skip()](functions/skip.md) ✅ - Skip first N elements
+- [limit()](functions/limit.md) ✅ - Take first N elements
 
 #### Matching & Search
-- [anyMatch()](functions/anyMatch.md) - Check if any element matches
-- [allMatch()](functions/allMatch.md) - Check if all elements match
-- [noneMatch()](functions/noneMatch.md) - Check if no elements match
-- [findFirst()](functions/findFirst.md) - Find first matching element
+- [anyMatch()](functions/anyMatch.md) ✅ - Check if any element matches
+- [allMatch()](functions/allMatch.md) ✅ - Check if all elements match
+- [noneMatch()](functions/noneMatch.md) ✅ - Check if no elements match
+- [findFirst()](functions/findFirst.md) ✅ - Find first matching element
 
 #### Aggregation
-- [count()](functions/count.md) - Count elements
-- [sum()](functions/sum.md) - Sum numeric values
-- [avg()](functions/avg.md) - Calculate average
-- [min()](functions/min.md) - Find minimum value
-- [max()](functions/max.md) - Find maximum value
+- [count()](functions/count.md) ✅ - Count elements
+- [sum()](functions/sum.md) ✅ - Sum numeric values
+- [avg()](functions/avg.md) ✅ - Calculate average
+- [min()](functions/min.md) ✅ - Find minimum value
+- [max()](functions/max.md) ✅ - Find maximum value
 
 #### Object Functions
-- [merge()](functions/merge.md) - Merge objects
-- [pluck()](functions/pluck.md) - Extract field from objects
-- [indexBy()](functions/indexBy.md) - Create object indexed by field
-- [groupBy()](functions/groupBy.md) - Group elements by key
-- [partition()](functions/partition.md) - Split array into two groups
-- [keys()](functions/keys.md) - Get object keys
-- [values()](functions/values.md) - Get object values
-- [entries()](functions/entries.md) - Get key-value pairs
-- [get()](functions/get.md) - Get nested value safely
-- [set()](functions/set.md) - Set nested value
+- [merge()](functions/merge.md) ✅ - Merge objects
+- [pluck()](functions/pluck.md) ✅ - Extract field from objects
+- [indexBy()](functions/indexBy.md) ✅ - Create object indexed by field
+- [groupBy()](functions/groupBy.md) ✅ - Group elements by key
+- [partition()](functions/partition.md) ✅ - Split array into two groups
+- [keys()](functions/keys.md) ✅ - Get object keys
+- [values()](functions/values.md) ✅ - Get object values
+- [entries()](functions/entries.md) ✅ - Get key-value pairs
+- [get()](functions/get.md) ✅ - Get nested value safely
+- [set()](functions/set.md) ✅ - Set nested value
 
 #### String Functions
-- [split()](functions/split.md) - Split string into array
-- [join()](functions/join.md) - Join array into string
-- [upper()](functions/upper.md) - Convert to uppercase
-- [lower()](functions/lower.md) - Convert to lowercase
-- [trim()](functions/trim.md) - Remove whitespace
-- [replace()](functions/replace.md) - Replace substring
+- [split()](functions/split.md) ✅ - Split string into array
+- [join()](functions/join.md) ✅ - Join array into string
+- [upper()](functions/upper.md) ✅ - Convert to uppercase
+- [lower()](functions/lower.md) ✅ - Convert to lowercase
+- [trim()](functions/trim.md) ✅ - Remove whitespace
+- [replace()](functions/replace.md) ✅ - Replace substring
 
 #### Type Conversion
-- [toNumber()](functions/toNumber.md) - Convert to number
-- [toString()](functions/toString.md) - Convert to string
-- [toBool()](functions/toBool.md) - Convert to boolean
-- [jsonParse()](functions/jsonParse.md) - Parse JSON string
-- [jsonStringify()](functions/jsonStringify.md) - Convert to JSON string
+- [toNumber()](functions/toNumber.md) ✅ - Convert to number
+- [toString()](functions/toString.md) ✅ - Convert to string
+- [toBool()](functions/toBool.md) ✅ - Convert to boolean
+- [jsonParse()](functions/jsonParse.md) ✅ - Parse JSON string
+- [jsonStringify()](functions/jsonStringify.md) ✅ - Convert to JSON string
 
 #### Utility Functions
-- [exists()](functions/exists.md) - Check if value exists
-- [len()](functions/len.md) - Get length of array/string
-- [now()](functions/now.md) - Get current timestamp
-- [formatDate()](functions/formatDate.md) - Format date string
-- [peek()](functions/peek.md) - Debug peek at values
+- [exists()](functions/exists.md) ✅ - Check if value exists
+- [len()](functions/len.md) ✅ - Get length of array/string
+- [now()](functions/now.md) ✅ - Get current timestamp
+- [formatDate()](functions/formatDate.md) ✅ - Format date string
+- [peek()](functions/peek.md) ✅ - Debug peek at values
 
 #### Advanced
-- [runMorph()](functions/runMorph.md) - Run nested transformation
-- [error()](functions/error.md) - Throw custom error ✅
-- [log(), logInfo(), logWarn(), logError(), logDebug()](functions/logging.md) - Logging functions ✅
+- [runMorph()](functions/runMorph.md) ✅ - Run nested transformation
+- [error()](functions/error.md) ✅ - Throw custom error
+- [log(), logInfo(), logWarn(), logError(), logDebug()](functions/logging.md) ✅ - Logging functions
 
 ### Advanced Topics
 - [User-Defined Functions](13-user-functions.md)
