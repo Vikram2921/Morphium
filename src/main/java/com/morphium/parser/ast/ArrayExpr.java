@@ -1,7 +1,11 @@
 package com.morphium.parser.ast;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
+import com.morphium.util.JsonUtil;
+
+import com.fasterxml.jackson.databind.node.*;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.runtime.Context;
 
 import java.util.ArrayList;
@@ -19,8 +23,8 @@ public class ArrayExpr implements Expression {
     }
 
     @Override
-    public JsonElement evaluate(Context context) {
-        JsonArray result = new JsonArray();
+    public JsonNode evaluate(Context context) {
+        ArrayNode result = JsonUtil.createArray();
         for (Expression expr : elements) {
             result.add(expr.evaluate(context));
         }

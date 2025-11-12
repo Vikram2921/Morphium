@@ -1,6 +1,6 @@
 package com.morphium.parser.ast;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.runtime.Context;
 
 public class TernaryExpr implements Expression {
@@ -15,8 +15,8 @@ public class TernaryExpr implements Expression {
     }
 
     @Override
-    public JsonElement evaluate(Context context) {
-        JsonElement condValue = condition.evaluate(context);
+    public JsonNode evaluate(Context context) {
+        JsonNode condValue = condition.evaluate(context);
         if (isTruthy(condValue)) {
             return thenExpr.evaluate(context);
         } else {
@@ -24,17 +24,17 @@ public class TernaryExpr implements Expression {
         }
     }
 
-    private boolean isTruthy(JsonElement value) {
-        if (value == null || value.isJsonNull()) return false;
-        if (value.isJsonPrimitive()) {
-            if (value.getAsJsonPrimitive().isBoolean()) {
-                return value.getAsBoolean();
+    private boolean isTruthy(JsonNode value) {
+        if (value == null || value.isNull()) return false;
+        if (value.isValueNode()) {
+            if (value.isBoolean()) {
+                return value.asBoolean();
             }
-            if (value.getAsJsonPrimitive().isNumber()) {
-                return value.getAsDouble() != 0;
+            if (value.isNumber()) {
+                return value.asDouble() != 0;
             }
-            if (value.getAsJsonPrimitive().isString()) {
-                return !value.getAsString().isEmpty();
+            if (value.isTextual()) {
+                return !value.asText().isEmpty();
             }
         }
         return true;

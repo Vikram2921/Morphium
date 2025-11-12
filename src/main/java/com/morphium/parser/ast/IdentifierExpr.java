@@ -1,6 +1,6 @@
 package com.morphium.parser.ast;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.runtime.Context;
 
 public class IdentifierExpr implements Expression {
@@ -11,7 +11,7 @@ public class IdentifierExpr implements Expression {
     }
 
     @Override
-    public JsonElement evaluate(Context context) {
+    public JsonNode evaluate(Context context) {
         return context.get(name);
     }
 

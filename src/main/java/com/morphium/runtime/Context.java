@@ -1,7 +1,7 @@
 package com.morphium.runtime;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.morphium.builtin.BuiltinFunctions;
 import com.morphium.parser.ast.Expression;
 
@@ -11,9 +11,9 @@ import java.util.Map;
 
 public class Context {
     private final Context parent;
-    private final Map<String, JsonElement> variables;
+    private final Map<String, JsonNode> variables;
     private final Map<String, UserFunction> userFunctions;
-    private final Map<String, JsonElement> exports;
+    private final Map<String, JsonNode> exports;
     private final HostFunctionRegistry functionRegistry;
     private final boolean isGlobal;
 
@@ -35,11 +35,11 @@ public class Context {
         this.isGlobal = false;
     }
 
-    public void define(String name, JsonElement value) {
+    public void define(String name, JsonNode value) {
         variables.put(name, value);
     }
 
-    public void defineGlobal(String name, JsonElement value) {
+    public void defineGlobal(String name, JsonNode value) {
         if (isGlobal) {
             variables.put(name, value);
         } else if (parent != null) {
@@ -47,14 +47,14 @@ public class Context {
         }
     }
 
-    public JsonElement get(String name) {
+    public JsonNode get(String name) {
         if (variables.containsKey(name)) {
             return variables.get(name);
         }
         if (parent != null) {
             return parent.get(name);
         }
-        return JsonNull.INSTANCE;
+        return NullNode.getInstance();
     }
 
     public void defineFunction(String name, List<String> parameters, Expression body) {
@@ -77,19 +77,19 @@ public class Context {
         return null;
     }
 
-    public void export(String name, JsonElement value) {
+    public void export(String name, JsonNode value) {
         exports.put(name, value);
     }
 
-    public JsonElement getExport(String name) {
+    public JsonNode getExport(String name) {
         return exports.get(name);
     }
 
-    public Map<String, JsonElement> getAllExports() {
+    public Map<String, JsonNode> getAllExports() {
         return new HashMap<>(exports);
     }
 
-    public JsonElement callFunction(String name, List<Expression> argExprs) {
+    public JsonNode callFunction(String name, List<Expression> argExprs) {
         // Check user-defined functions first
         UserFunction userFunc = getFunction(name);
         if (userFunc != null) {
@@ -97,14 +97,14 @@ public class Context {
         }
 
         // Check built-in functions (pass unevaluated expressions)
-        JsonElement result = BuiltinFunctions.call(name, argExprs, this);
+        JsonNode result = BuiltinFunctions.call(name, argExprs, this);
         if (result != null) {
             return result;
         }
 
         // For host functions, evaluate arguments first
         if (functionRegistry != null) {
-            JsonElement[] args = new JsonElement[argExprs.size()];
+            JsonNode[] args = new JsonNode[argExprs.size()];
             for (int i = 0; i < argExprs.size(); i++) {
                 args[i] = argExprs.get(i).evaluate(this);
             }
@@ -117,9 +117,9 @@ public class Context {
         throw new RuntimeException("Unknown function: " + name);
     }
 
-    private JsonElement callUserFunction(UserFunction func, List<Expression> argExprs) {
+    private JsonNode callUserFunction(UserFunction func, List<Expression> argExprs) {
         // Evaluate arguments
-        List<JsonElement> argValues = new java.util.ArrayList<>();
+        List<JsonNode> argValues = new java.util.ArrayList<>();
         for (Expression argExpr : argExprs) {
             argValues.add(argExpr.evaluate(this));
         }
@@ -130,7 +130,7 @@ public class Context {
         // Bind parameters
         List<String> params = func.getParameters();
         for (int i = 0; i < params.size(); i++) {
-            JsonElement value = i < argValues.size() ? argValues.get(i) : JsonNull.INSTANCE;
+            JsonNode value = i < argValues.size() ? argValues.get(i) : NullNode.getInstance();
             funcContext.define(params.get(i), value);
         }
 

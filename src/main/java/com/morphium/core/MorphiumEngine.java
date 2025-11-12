@@ -1,6 +1,8 @@
 package com.morphium.core;
 
-import com.google.gson.JsonElement;
+import com.morphium.util.JsonUtil;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.parser.Lexer;
 import com.morphium.parser.Parser;
 import com.morphium.parser.ast.Expression;
@@ -30,12 +32,12 @@ public class MorphiumEngine {
         this.rootContext = new Context(functionRegistry);
     }
 
-    public JsonElement transform(String transformPath, JsonElement input) throws IOException {
+    public JsonNode transform(String transformPath, JsonNode input) throws IOException {
         String source = loadSource(transformPath);
         return evaluate(source, input, transformPath);
     }
 
-    public JsonElement transformFromString(String source, JsonElement input) {
+    public JsonNode transformFromString(String source, JsonNode input) {
         return evaluate(source, input, "<string>");
     }
 
@@ -52,7 +54,7 @@ public class MorphiumEngine {
         return Files.readString(filePath);
     }
 
-    private JsonElement evaluate(String source, JsonElement input, String sourcePath) {
+    private JsonNode evaluate(String source, JsonNode input, String sourcePath) {
         try {
             Lexer lexer = new Lexer(source, sourcePath);
             Parser parser = new Parser(lexer);
@@ -62,7 +64,7 @@ public class MorphiumEngine {
             evalContext.define("input", input);
 
             // Handle imports and evaluate
-            JsonElement result = rootExpression.evaluate(evalContext);
+            JsonNode result = rootExpression.evaluate(evalContext);
             
             // Process imports if any
             result = processImports(rootExpression, evalContext, result);
@@ -73,7 +75,7 @@ public class MorphiumEngine {
         }
     }
 
-    private JsonElement processImports(Expression rootExpr, Context context, JsonElement result) {
+    private JsonNode processImports(Expression rootExpr, Context context, JsonNode result) {
         if (rootExpr instanceof com.morphium.parser.ast.BlockExpr) {
             com.morphium.parser.ast.BlockExpr block = (com.morphium.parser.ast.BlockExpr) rootExpr;
             for (Expression expr : block.getExpressions()) {
@@ -102,9 +104,9 @@ public class MorphiumEngine {
             String alias = importStmt.getAlias();
             if (alias != null) {
                 // Import all exports under alias namespace
-                com.google.gson.JsonObject exports = new com.google.gson.JsonObject();
-                for (java.util.Map.Entry<String, JsonElement> entry : moduleContext.getAllExports().entrySet()) {
-                    exports.add(entry.getKey(), entry.getValue());
+                com.fasterxml.jackson.databind.node.ObjectNode exports = com.morphium.util.JsonUtil.createObject();
+                for (java.util.Map.Entry<String, JsonNode> entry : moduleContext.getAllExports().entrySet()) {
+                    exports.set(entry.getKey(), entry.getValue());
                 }
                 context.define(alias, exports);
                 
@@ -123,6 +125,6 @@ public class MorphiumEngine {
 
     @FunctionalInterface
     public interface HostFunction {
-        JsonElement call(JsonElement... args);
+        JsonNode call(JsonNode... args);
     }
 }

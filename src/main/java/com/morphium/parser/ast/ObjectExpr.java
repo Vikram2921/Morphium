@@ -1,8 +1,9 @@
 package com.morphium.parser.ast;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.morphium.runtime.Context;
+import com.morphium.util.JsonUtil;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -25,19 +26,19 @@ public class ObjectExpr implements Expression {
     }
 
     @Override
-    public JsonElement evaluate(Context context) {
-        JsonObject result = new JsonObject();
+    public JsonNode evaluate(Context context) {
+        ObjectNode result = JsonUtil.createObject();
 
         for (Map.Entry<String, Expression> entry : properties.entrySet()) {
-            JsonElement value = entry.getValue().evaluate(context);
-            result.add(entry.getKey(), value);
+            JsonNode value = entry.getValue().evaluate(context);
+            result.set(entry.getKey(), value);
         }
 
         for (Map.Entry<Expression, Expression> entry : computedProperties.entrySet()) {
-            JsonElement keyElement = entry.getKey().evaluate(context);
-            String key = keyElement.isJsonPrimitive() ? keyElement.getAsString() : keyElement.toString();
-            JsonElement value = entry.getValue().evaluate(context);
-            result.add(key, value);
+            JsonNode keyElement = entry.getKey().evaluate(context);
+            String key = keyElement.isValueNode() ? keyElement.asText() : keyElement.toString();
+            JsonNode value = entry.getValue().evaluate(context);
+            result.set(key, value);
         }
 
         return result;

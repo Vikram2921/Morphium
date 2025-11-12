@@ -1,28 +1,28 @@
 package com.morphium.builtin;
 
-import com.google.gson.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.*;
 import com.morphium.parser.ast.Expression;
-import com.morphium.parser.ast.LiteralExpr;
 import com.morphium.runtime.Context;
+import com.morphium.util.JsonUtil;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
+import java.util.Iterator;
 
 public class BuiltinFunctions {
+    private static final ObjectMapper mapper = new ObjectMapper();
 
-    public static JsonElement call(String name, List<Expression> argExprs, Context context) {
-        // Special handling for functions that need unevaluated expressions
+    public static JsonNode call(String name, java.util.List<Expression> argExprs, Context context) {
         switch (name) {
             case "map": return map(argExprs, context);
             case "filter": return filter(argExprs, context);
             case "reduce": return reduce(argExprs, context);
         }
         
-        // Evaluate arguments for other functions
-        JsonElement[] args = evaluateArgs(argExprs, context);
+        JsonNode[] args = evaluateArgs(argExprs, context);
         switch (name) {
             case "merge": return merge(args);
             case "pluck": return pluck(args);
@@ -48,48 +48,49 @@ public class BuiltinFunctions {
         }
     }
 
-    // map(array, "itemName", expr)
-    private static JsonElement map(List<Expression> argExprs, Context context) {
+    private static JsonNode[] evaluateArgs(java.util.List<Expression> argExprs, Context context) {
+        JsonNode[] args = new JsonNode[argExprs.size()];
+        for (int i = 0; i < argExprs.size(); i++) {
+            args[i] = argExprs.get(i).evaluate(context);
+        }
+        return args;
+    }
+
+    private static JsonNode map(java.util.List<Expression> argExprs, Context context) {
         if (argExprs.size() < 3) throw new RuntimeException("map requires 3 arguments");
         
-        JsonElement arrayArg = argExprs.get(0).evaluate(context);
-        if (!arrayArg.isJsonArray()) return new JsonArray();
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return JsonUtil.createArray();
         
-        String itemName = argExprs.get(1).evaluate(context).getAsString();
+        String itemName = argExprs.get(1).evaluate(context).asText();
         Expression mapExpr = argExprs.get(2);
         
-        JsonArray result = new JsonArray();
-        JsonArray array = arrayArg.getAsJsonArray();
-        
-        for (JsonElement item : array) {
+        ArrayNode result = JsonUtil.createArray();
+        for (JsonNode item : arrayArg) {
             Context itemContext = new Context(context);
             itemContext.define(itemName, item);
-            JsonElement mapped = mapExpr.evaluate(itemContext);
+            JsonNode mapped = mapExpr.evaluate(itemContext);
             result.add(mapped);
         }
         
         return result;
     }
 
-    // filter(array, "itemName", predicateExpr)
-    private static JsonElement filter(List<Expression> argExprs, Context context) {
+    private static JsonNode filter(java.util.List<Expression> argExprs, Context context) {
         if (argExprs.size() < 3) throw new RuntimeException("filter requires 3 arguments");
         
-        JsonElement arrayArg = argExprs.get(0).evaluate(context);
-        if (!arrayArg.isJsonArray()) return new JsonArray();
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return JsonUtil.createArray();
         
-        String itemName = argExprs.get(1).evaluate(context).getAsString();
+        String itemName = argExprs.get(1).evaluate(context).asText();
         Expression predicateExpr = argExprs.get(2);
         
-        JsonArray result = new JsonArray();
-        JsonArray array = arrayArg.getAsJsonArray();
-        
-        for (JsonElement item : array) {
+        ArrayNode result = JsonUtil.createArray();
+        for (JsonNode item : arrayArg) {
             Context itemContext = new Context(context);
             itemContext.define(itemName, item);
-            JsonElement test = predicateExpr.evaluate(itemContext);
-            
-            if (isTruthy(test)) {
+            JsonNode predicate = predicateExpr.evaluate(itemContext);
+            if (isTruthy(predicate)) {
                 result.add(item);
             }
         }
@@ -97,351 +98,256 @@ public class BuiltinFunctions {
         return result;
     }
 
-    // reduce(array, "accName", "itemName", init, expr)
-    private static JsonElement reduce(List<Expression> argExprs, Context context) {
+    private static JsonNode reduce(java.util.List<Expression> argExprs, Context context) {
         if (argExprs.size() < 5) throw new RuntimeException("reduce requires 5 arguments");
         
-        JsonElement arrayArg = argExprs.get(0).evaluate(context);
-        JsonElement initVal = argExprs.get(3).evaluate(context);
-        if (!arrayArg.isJsonArray()) return initVal;
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return NullNode.getInstance();
         
-        String accName = argExprs.get(1).evaluate(context).getAsString();
-        String itemName = argExprs.get(2).evaluate(context).getAsString();
-        JsonElement accumulator = initVal;
+        String accName = argExprs.get(1).evaluate(context).asText();
+        String itemName = argExprs.get(2).evaluate(context).asText();
+        JsonNode initValue = argExprs.get(3).evaluate(context);
         Expression reduceExpr = argExprs.get(4);
         
-        JsonArray array = arrayArg.getAsJsonArray();
-        
-        for (JsonElement item : array) {
-            Context itemContext = new Context(context);
-            itemContext.define(accName, accumulator);
-            itemContext.define(itemName, item);
-            accumulator = reduceExpr.evaluate(itemContext);
+        JsonNode accumulator = initValue;
+        for (JsonNode item : arrayArg) {
+            Context reduceContext = new Context(context);
+            reduceContext.define(accName, accumulator);
+            reduceContext.define(itemName, item);
+            accumulator = reduceExpr.evaluate(reduceContext);
         }
         
         return accumulator;
     }
 
-    // merge(obj1, obj2, ...)
-    private static JsonElement merge(JsonElement[] args) {
-        JsonObject result = new JsonObject();
-        
-        for (JsonElement arg : args) {
-            if (arg.isJsonObject()) {
-                mergeInto(result, arg.getAsJsonObject());
-            }
-        }
-        
-        return result;
-    }
-
-    private static void mergeInto(JsonObject target, JsonObject source) {
-        for (Map.Entry<String, JsonElement> entry : source.entrySet()) {
-            String key = entry.getKey();
-            JsonElement value = entry.getValue();
-            
-            if (value.isJsonObject() && target.has(key) && target.get(key).isJsonObject()) {
-                mergeInto(target.getAsJsonObject(key), value.getAsJsonObject());
-            } else {
-                target.add(key, value);
-            }
-        }
-    }
-
-    // pluck(array, key)
-    private static JsonElement pluck(JsonElement[] args) {
-        if (args.length < 2) throw new RuntimeException("pluck requires 2 arguments");
-        
-        JsonElement arrayArg = args[0];
-        if (!arrayArg.isJsonArray()) return new JsonArray();
-        
-        String key = args[1].getAsString();
-        JsonArray result = new JsonArray();
-        
-        for (JsonElement item : arrayArg.getAsJsonArray()) {
-            if (item.isJsonObject() && item.getAsJsonObject().has(key)) {
-                result.add(item.getAsJsonObject().get(key));
-            } else {
-                result.add(JsonNull.INSTANCE);
-            }
-        }
-        
-        return result;
-    }
-
-    // indexBy(array, key)
-    private static JsonElement indexBy(JsonElement[] args) {
-        if (args.length < 2) throw new RuntimeException("indexBy requires 2 arguments");
-        
-        JsonElement arrayArg = args[0];
-        if (!arrayArg.isJsonArray()) return new JsonObject();
-        
-        String key = args[1].getAsString();
-        JsonObject result = new JsonObject();
-        
-        for (JsonElement item : arrayArg.getAsJsonArray()) {
-            if (item.isJsonObject()) {
-                JsonObject obj = item.getAsJsonObject();
-                if (obj.has(key)) {
-                    String indexKey = obj.get(key).getAsString();
-                    result.add(indexKey, item);
+    private static JsonNode merge(JsonNode[] args) {
+        ObjectNode result = JsonUtil.createObject();
+        for (JsonNode arg : args) {
+            if (arg.isObject()) {
+                Iterator<String> fieldNames = arg.fieldNames();
+                while (fieldNames.hasNext()) {
+                    String fieldName = fieldNames.next();
+                    result.set(fieldName, arg.get(fieldName));
                 }
             }
         }
-        
         return result;
     }
 
-    // exists(x)
-    private static JsonElement exists(JsonElement[] args) {
-        if (args.length < 1) return new JsonPrimitive(false);
-        JsonElement value = args[0];
-        return new JsonPrimitive(value != null && !value.isJsonNull());
-    }
-
-    // len(x)
-    private static JsonElement len(JsonElement[] args) {
-        if (args.length < 1) return new JsonPrimitive(0);
+    private static JsonNode pluck(JsonNode[] args) {
+        if (args.length < 2) return JsonUtil.createArray();
+        JsonNode array = args[0];
+        String key = args[1].asText();
         
-        JsonElement value = args[0];
-        if (value == null || value.isJsonNull()) return new JsonPrimitive(0);
-        
-        if (value.isJsonArray()) {
-            return new JsonPrimitive(value.getAsJsonArray().size());
+        ArrayNode result = JsonUtil.createArray();
+        if (array.isArray()) {
+            for (JsonNode item : array) {
+                if (item.has(key)) {
+                    result.add(item.get(key));
+                }
+            }
         }
-        if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()) {
-            return new JsonPrimitive(value.getAsString().length());
+        return result;
+    }
+
+    private static JsonNode indexBy(JsonNode[] args) {
+        if (args.length < 2) return JsonUtil.createObject();
+        JsonNode array = args[0];
+        String key = args[1].asText();
+        
+        ObjectNode result = JsonUtil.createObject();
+        if (array.isArray()) {
+            for (JsonNode item : array) {
+                if (item.has(key)) {
+                    String indexKey = item.get(key).asText();
+                    result.set(indexKey, item);
+                }
+            }
         }
-        
-        return new JsonPrimitive(0);
+        return result;
     }
 
-    // now()
-    private static JsonElement now(JsonElement[] args) {
-        return new JsonPrimitive(Instant.now().toString());
+    private static JsonNode exists(JsonNode[] args) {
+        if (args.length == 0) return BooleanNode.FALSE;
+        JsonNode val = args[0];
+        return BooleanNode.valueOf(val != null && !val.isNull());
     }
 
-    // formatDate(dateStr, fmt)
-    private static JsonElement formatDate(JsonElement[] args) {
-        if (args.length < 2) throw new RuntimeException("formatDate requires 2 arguments");
-        
-        String dateStr = args[0].getAsString();
-        String format = args[1].getAsString();
+    private static JsonNode len(JsonNode[] args) {
+        if (args.length == 0) return IntNode.valueOf(0);
+        JsonNode val = args[0];
+        if (val.isArray()) {
+            return IntNode.valueOf(val.size());
+        }
+        if (val.isTextual()) {
+            return IntNode.valueOf(val.asText().length());
+        }
+        return IntNode.valueOf(0);
+    }
+
+    private static JsonNode now(JsonNode[] args) {
+        return TextNode.valueOf(Instant.now().toString());
+    }
+
+    private static JsonNode formatDate(JsonNode[] args) {
+        if (args.length < 2) return TextNode.valueOf("");
+        String dateStr = args[0].asText();
+        String format = args[1].asText();
         
         try {
             LocalDate date = LocalDate.parse(dateStr);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-            return new JsonPrimitive(date.format(formatter));
+            return TextNode.valueOf(date.format(formatter));
         } catch (Exception e) {
-            return new JsonPrimitive(dateStr);
+            return TextNode.valueOf(dateStr);
         }
     }
 
-    // split(str, sep)
-    private static JsonElement split(JsonElement[] args) {
-        if (args.length < 2) throw new RuntimeException("split requires 2 arguments");
+    private static JsonNode split(JsonNode[] args) {
+        if (args.length < 2) return JsonUtil.createArray();
+        String str = args[0].asText();
+        String separator = args[1].asText();
         
-        String str = args[0].getAsString();
-        String sep = args[1].getAsString();
-        String[] parts = str.split(sep, -1);
-        
-        JsonArray result = new JsonArray();
+        ArrayNode result = JsonUtil.createArray();
+        String[] parts = str.split(java.util.regex.Pattern.quote(separator));
         for (String part : parts) {
-            result.add(new JsonPrimitive(part));
+            result.add(TextNode.valueOf(part));
         }
-        
         return result;
     }
 
-    // join(array, sep)
-    private static JsonElement join(JsonElement[] args) {
-        if (args.length < 2) throw new RuntimeException("join requires 2 arguments");
+    private static JsonNode join(JsonNode[] args) {
+        if (args.length < 2) return TextNode.valueOf("");
+        JsonNode array = args[0];
+        String separator = args[1].asText();
         
-        JsonElement arrayArg = args[0];
-        if (!arrayArg.isJsonArray()) return new JsonPrimitive("");
+        if (!array.isArray()) return TextNode.valueOf("");
         
-        String sep = args[1].getAsString();
         StringBuilder sb = new StringBuilder();
-        JsonArray array = arrayArg.getAsJsonArray();
-        
-        for (int i = 0; i < array.size(); i++) {
-            if (i > 0) sb.append(sep);
-            JsonElement elem = array.get(i);
-            if (elem.isJsonPrimitive()) {
-                sb.append(elem.getAsString());
-            } else {
-                sb.append(elem.toString());
-            }
+        boolean first = true;
+        for (JsonNode item : array) {
+            if (!first) sb.append(separator);
+            sb.append(item.asText());
+            first = false;
         }
-        
-        return new JsonPrimitive(sb.toString());
+        return TextNode.valueOf(sb.toString());
     }
 
-    // upper(str)
-    private static JsonElement upper(JsonElement[] args) {
-        if (args.length < 1) return new JsonPrimitive("");
-        return new JsonPrimitive(args[0].getAsString().toUpperCase());
+    private static JsonNode upper(JsonNode[] args) {
+        if (args.length == 0) return TextNode.valueOf("");
+        return TextNode.valueOf(args[0].asText().toUpperCase());
     }
 
-    // lower(str)
-    private static JsonElement lower(JsonElement[] args) {
-        if (args.length < 1) return new JsonPrimitive("");
-        return new JsonPrimitive(args[0].getAsString().toLowerCase());
+    private static JsonNode lower(JsonNode[] args) {
+        if (args.length == 0) return TextNode.valueOf("");
+        return TextNode.valueOf(args[0].asText().toLowerCase());
     }
 
-    // trim(str)
-    private static JsonElement trim(JsonElement[] args) {
-        if (args.length < 1) return new JsonPrimitive("");
-        return new JsonPrimitive(args[0].getAsString().trim());
+    private static JsonNode trim(JsonNode[] args) {
+        if (args.length == 0) return TextNode.valueOf("");
+        return TextNode.valueOf(args[0].asText().trim());
     }
 
-    // replace(str, pattern, replacement)
-    private static JsonElement replace(JsonElement[] args) {
-        if (args.length < 3) throw new RuntimeException("replace requires 3 arguments");
-        
-        String str = args[0].getAsString();
-        String pattern = args[1].getAsString();
-        String replacement = args[2].getAsString();
-        
-        return new JsonPrimitive(str.replace(pattern, replacement));
+    private static JsonNode replace(JsonNode[] args) {
+        if (args.length < 3) return TextNode.valueOf("");
+        String str = args[0].asText();
+        String target = args[1].asText();
+        String replacement = args[2].asText();
+        return TextNode.valueOf(str.replace(target, replacement));
     }
 
-    // toNumber(x)
-    private static JsonElement toNumber(JsonElement[] args) {
-        if (args.length < 1) return new JsonPrimitive(0);
-        
-        JsonElement value = args[0];
-        if (value.isJsonPrimitive()) {
-            JsonPrimitive prim = value.getAsJsonPrimitive();
-            if (prim.isNumber()) {
-                return value;
-            }
-            if (prim.isString()) {
-                try {
-                    return new JsonPrimitive(Double.parseDouble(prim.getAsString()));
-                } catch (NumberFormatException e) {
-                    return new JsonPrimitive(0);
-                }
-            }
-        }
-        
-        return new JsonPrimitive(0);
-    }
-
-    // toString(x)
-    private static JsonElement toStringFunc(JsonElement[] args) {
-        if (args.length < 1) return new JsonPrimitive("");
-        
-        JsonElement value = args[0];
-        if (value == null || value.isJsonNull()) {
-            return new JsonPrimitive("null");
-        }
-        if (value.isJsonPrimitive()) {
-            return new JsonPrimitive(value.getAsString());
-        }
-        
-        return new JsonPrimitive(value.toString());
-    }
-
-    // toBool(x)
-    private static JsonElement toBool(JsonElement[] args) {
-        if (args.length < 1) return new JsonPrimitive(false);
-        return new JsonPrimitive(isTruthy(args[0]));
-    }
-
-    // jsonParse(str)
-    private static JsonElement jsonParse(JsonElement[] args) {
-        if (args.length < 1) throw new RuntimeException("jsonParse requires 1 argument");
-        
-        String json = args[0].getAsString();
+    private static JsonNode toNumber(JsonNode[] args) {
+        if (args.length == 0) return IntNode.valueOf(0);
+        JsonNode val = args[0];
+        if (val.isNumber()) return val;
         try {
-            return JsonParser.parseString(json);
-        } catch (JsonSyntaxException e) {
-            throw new RuntimeException("Invalid JSON: " + e.getMessage());
+            String text = val.asText();
+            if (text.contains(".")) {
+                return DoubleNode.valueOf(Double.parseDouble(text));
+            }
+            return IntNode.valueOf(Integer.parseInt(text));
+        } catch (Exception e) {
+            return IntNode.valueOf(0);
         }
     }
 
-    // jsonStringify(value)
-    private static JsonElement jsonStringify(JsonElement[] args) {
-        if (args.length < 1) return new JsonPrimitive("null");
-        
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return new JsonPrimitive(gson.toJson(args[0]));
+    private static JsonNode toStringFunc(JsonNode[] args) {
+        if (args.length == 0) return TextNode.valueOf("");
+        return TextNode.valueOf(args[0].asText());
     }
 
-    // get(obj, "path.to.node")
-    private static JsonElement get(JsonElement[] args) {
-        if (args.length < 2) throw new RuntimeException("get requires 2 arguments");
+    private static JsonNode toBool(JsonNode[] args) {
+        if (args.length == 0) return BooleanNode.FALSE;
+        return BooleanNode.valueOf(isTruthy(args[0]));
+    }
+
+    private static JsonNode jsonParse(JsonNode[] args) {
+        if (args.length == 0) return NullNode.getInstance();
+        try {
+            return mapper.readTree(args[0].asText());
+        } catch (Exception e) {
+            return NullNode.getInstance();
+        }
+    }
+
+    private static JsonNode jsonStringify(JsonNode[] args) {
+        if (args.length == 0) return TextNode.valueOf("null");
+        try {
+            return TextNode.valueOf(mapper.writeValueAsString(args[0]));
+        } catch (Exception e) {
+            return TextNode.valueOf("null");
+        }
+    }
+
+    private static JsonNode get(JsonNode[] args) {
+        if (args.length < 2) return NullNode.getInstance();
+        JsonNode obj = args[0];
+        String path = args[1].asText();
         
-        JsonElement obj = args[0];
-        String path = args[1].getAsString();
         String[] parts = path.split("\\.");
-        
-        JsonElement current = obj;
+        JsonNode current = obj;
         for (String part : parts) {
-            if (current == null || current.isJsonNull()) {
-                return JsonNull.INSTANCE;
-            }
-            if (current.isJsonObject()) {
-                current = current.getAsJsonObject().get(part);
-            } else {
-                return JsonNull.INSTANCE;
-            }
+            if (current == null || current.isNull()) return NullNode.getInstance();
+            current = current.get(part);
         }
-        
-        return current != null ? current : JsonNull.INSTANCE;
+        return current != null ? current : NullNode.getInstance();
     }
 
-    // set(obj, "path.to.node", value) - immutable
-    private static JsonElement set(JsonElement[] args) {
-        if (args.length < 3) throw new RuntimeException("set requires 3 arguments");
+    private static JsonNode set(JsonNode[] args) {
+        if (args.length < 3) return args.length > 0 ? args[0] : NullNode.getInstance();
         
-        JsonElement obj = args[0];
-        String path = args[1].getAsString();
-        JsonElement value = args[2];
+        JsonNode obj = args[0];
+        String path = args[1].asText();
+        JsonNode value = args[2];
         
-        if (!obj.isJsonObject()) {
-            throw new RuntimeException("set requires an object as first argument");
-        }
+        if (!obj.isObject()) return obj;
         
-        JsonObject result = deepCopy(obj.getAsJsonObject());
+        ObjectNode result = obj.deepCopy();
         String[] parts = path.split("\\.");
         
-        JsonObject current = result;
+        ObjectNode current = result;
         for (int i = 0; i < parts.length - 1; i++) {
-            String part = parts[i];
-            if (!current.has(part) || !current.get(part).isJsonObject()) {
-                current.add(part, new JsonObject());
+            JsonNode next = current.get(parts[i]);
+            if (next == null || !next.isObject()) {
+                ObjectNode newObj = JsonUtil.createObject();
+                current.set(parts[i], newObj);
+                current = newObj;
+            } else {
+                current = (ObjectNode) next;
             }
-            current = current.getAsJsonObject(part);
         }
+        current.set(parts[parts.length - 1], value);
         
-        current.add(parts[parts.length - 1], value);
         return result;
     }
 
-    private static JsonObject deepCopy(JsonObject obj) {
-        Gson gson = new Gson();
-        String json = gson.toJson(obj);
-        return gson.fromJson(json, JsonObject.class);
-    }
-
-    private static boolean isTruthy(JsonElement value) {
-        if (value == null || value.isJsonNull()) return false;
-        if (value.isJsonPrimitive()) {
-            JsonPrimitive prim = value.getAsJsonPrimitive();
-            if (prim.isBoolean()) return prim.getAsBoolean();
-            if (prim.isNumber()) return prim.getAsDouble() != 0;
-            if (prim.isString()) return !prim.getAsString().isEmpty();
-        }
+    private static boolean isTruthy(JsonNode node) {
+        if (node == null || node.isNull()) return false;
+        if (node.isBoolean()) return node.asBoolean();
+        if (node.isNumber()) return node.asDouble() != 0;
+        if (node.isTextual()) return !node.asText().isEmpty();
+        if (node.isArray()) return !node.isEmpty();
+        if (node.isObject()) return !node.isEmpty();
         return true;
-    }
-
-    private static JsonElement[] evaluateArgs(List<Expression> argExprs, Context context) {
-        JsonElement[] args = new JsonElement[argExprs.size()];
-        for (int i = 0; i < argExprs.size(); i++) {
-            args[i] = argExprs.get(i).evaluate(context);
-        }
-        return args;
     }
 }

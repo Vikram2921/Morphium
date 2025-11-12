@@ -1,9 +1,11 @@
 package com.morphium.parser.ast;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.node.*;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.morphium.runtime.Context;
 
 public class MemberAccessExpr implements Expression {
@@ -20,41 +22,41 @@ public class MemberAccessExpr implements Expression {
     }
 
     @Override
-    public JsonElement evaluate(Context context) {
-        JsonElement obj = object.evaluate(context);
+    public JsonNode evaluate(Context context) {
+        JsonNode obj = object.evaluate(context);
 
-        if (obj == null || obj.isJsonNull()) {
-            if (safe) return JsonNull.INSTANCE;
+        if (obj == null || obj.isNull()) {
+            if (safe) return NullNode.getInstance();
             throw new RuntimeException("Cannot access property of null");
         }
 
         String propName;
         if (computed) {
-            JsonElement propElement = property.evaluate(context);
-            if (propElement.isJsonPrimitive() && propElement.getAsJsonPrimitive().isNumber()) {
-                int index = propElement.getAsInt();
-                if (obj.isJsonArray()) {
-                    JsonArray arr = obj.getAsJsonArray();
+            JsonNode propElement = property.evaluate(context);
+            if (propElement.isValueNode() && propElement.isNumber()) {
+                int index = propElement.asInt();
+                if (obj.isArray()) {
+                    ArrayNode arr = obj.asJsonArray();
                     if (index >= 0 && index < arr.size()) {
                         return arr.get(index);
                     }
-                    return safe ? JsonNull.INSTANCE : null;
+                    return safe ? NullNode.getInstance() : null;
                 }
             }
-            propName = propElement.isJsonPrimitive() ? propElement.getAsString() : propElement.toString();
+            propName = propElement.isValueNode() ? propElement.asText() : propElement.toString();
         } else if (property instanceof IdentifierExpr) {
             propName = ((IdentifierExpr) property).getName();
         } else {
-            propName = property.evaluate(context).getAsString();
+            propName = property.evaluate(context).asText();
         }
 
-        if (obj.isJsonObject()) {
-            JsonObject jsonObj = obj.getAsJsonObject();
+        if (obj.isObject()) {
+            ObjectNode jsonObj = obj.asJsonObject();
             if (jsonObj.has(propName)) {
                 return jsonObj.get(propName);
             }
         }
 
-        return safe ? JsonNull.INSTANCE : null;
+        return safe ? NullNode.getInstance() : null;
     }
 }

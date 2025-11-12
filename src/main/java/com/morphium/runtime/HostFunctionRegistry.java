@@ -1,6 +1,6 @@
 package com.morphium.runtime;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.core.MorphiumEngine.HostFunction;
 
 import java.util.HashMap;
@@ -18,7 +18,7 @@ public class HostFunctionRegistry {
         register("", name, function);
     }
 
-    public JsonElement call(String name, JsonElement[] args) {
+    public JsonNode call(String name, JsonNode[] args) {
         HostFunction function = functions.get(name);
         if (function != null) {
             return function.call(args);

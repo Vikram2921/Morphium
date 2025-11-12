@@ -1,6 +1,6 @@
 package com.morphium.parser.ast;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.runtime.Context;
 
 public class ExportStatement implements Expression {
@@ -13,8 +13,8 @@ public class ExportStatement implements Expression {
     }
 
     @Override
-    public JsonElement evaluate(Context context) {
-        JsonElement result = value.evaluate(context);
+    public JsonNode evaluate(Context context) {
+        JsonNode result = value.evaluate(context);
         context.export(name, result);
         return result;
     }

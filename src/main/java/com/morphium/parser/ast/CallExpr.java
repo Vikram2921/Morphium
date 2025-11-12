@@ -1,6 +1,6 @@
 package com.morphium.parser.ast;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.runtime.Context;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public class CallExpr implements Expression {
     }
 
     @Override
-    public JsonElement evaluate(Context context) {
+    public JsonNode evaluate(Context context) {
         if (callee instanceof IdentifierExpr) {
             String funcName = ((IdentifierExpr) callee).getName();
             return context.callFunction(funcName, arguments);
@@ -30,7 +30,7 @@ public class CallExpr implements Expression {
         throw new RuntimeException("Cannot call non-function");
     }
 
-    private JsonElement evaluateMemberCall(Context context) {
+    private JsonNode evaluateMemberCall(Context context) {
         // For namespace.function calls
         MemberAccessExpr memberExpr = (MemberAccessExpr) callee;
         // This is simplified - full implementation would extract namespace and function name

@@ -1,8 +1,12 @@
 package com.morphium;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.morphium.util.JsonUtil;
+
+import com.fasterxml.jackson.databind.node.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.morphium.core.MorphiumEngine;
 import org.junit.Test;
 
@@ -18,14 +22,14 @@ public class UserDefinedFunctionsTest {
             "function double(x) { return x * 2 }\n" +
             "{ result: double(input.value) }";
         
-        JsonObject input = new JsonObject();
-        input.addProperty("value", 5);
+        ObjectNode input = JsonUtil.createObject();
+        input.put("value", 5);
 
         MorphiumEngine engine = new MorphiumEngine();
-        JsonElement result = engine.transformFromString(transform, input);
+        JsonNode result = engine.transformFromString(transform, input);
 
-        JsonObject obj = result.getAsJsonObject();
-        assertEquals(10, obj.get("result").getAsInt());
+        ObjectNode obj = result.asJsonObject();
+        assertEquals(10, obj.get("result").asInt());
     }
 
     @Test
@@ -34,15 +38,15 @@ public class UserDefinedFunctionsTest {
             "function add(a, b) { return a + b }\n" +
             "{ sum: add(input.x, input.y) }";
         
-        JsonObject input = new JsonObject();
-        input.addProperty("x", 10);
-        input.addProperty("y", 20);
+        ObjectNode input = JsonUtil.createObject();
+        input.put("x", 10);
+        input.put("y", 20);
 
         MorphiumEngine engine = new MorphiumEngine();
-        JsonElement result = engine.transformFromString(transform, input);
+        JsonNode result = engine.transformFromString(transform, input);
 
-        JsonObject obj = result.getAsJsonObject();
-        assertEquals(30, obj.get("sum").getAsInt());
+        ObjectNode obj = result.asJsonObject();
+        assertEquals(30, obj.get("sum").asInt());
     }
 
     @Test
@@ -52,13 +56,13 @@ public class UserDefinedFunctionsTest {
             "function sumOfSquares(a, b) { return square(a) + square(b) }\n" +
             "{ result: sumOfSquares(3, 4) }";
         
-        JsonObject input = new JsonObject();
+        ObjectNode input = JsonUtil.createObject();
 
         MorphiumEngine engine = new MorphiumEngine();
-        JsonElement result = engine.transformFromString(transform, input);
+        JsonNode result = engine.transformFromString(transform, input);
 
-        JsonObject obj = result.getAsJsonObject();
-        assertEquals(25, obj.get("result").getAsInt()); // 9 + 16
+        ObjectNode obj = result.asJsonObject();
+        assertEquals(25, obj.get("result").asInt()); // 9 + 16
     }
 
     @Test
@@ -71,13 +75,13 @@ public class UserDefinedFunctionsTest {
             "}\n" +
             "{ result: calculate(3) }";
         
-        JsonObject input = new JsonObject();
+        ObjectNode input = JsonUtil.createObject();
 
         MorphiumEngine engine = new MorphiumEngine();
-        JsonElement result = engine.transformFromString(transform, input);
+        JsonNode result = engine.transformFromString(transform, input);
 
-        JsonObject obj = result.getAsJsonObject();
-        assertEquals(36, obj.get("result").getAsInt()); // (3*2)^2 = 36
+        ObjectNode obj = result.asJsonObject();
+        assertEquals(36, obj.get("result").asInt()); // (3*2)^2 = 36
     }
 
     @Test
@@ -87,13 +91,13 @@ public class UserDefinedFunctionsTest {
             "function circleArea(radius) { return PI * radius * radius }\n" +
             "{ area: circleArea(10) }";
         
-        JsonObject input = new JsonObject();
+        ObjectNode input = JsonUtil.createObject();
 
         MorphiumEngine engine = new MorphiumEngine();
-        JsonElement result = engine.transformFromString(transform, input);
+        JsonNode result = engine.transformFromString(transform, input);
 
-        JsonObject obj = result.getAsJsonObject();
-        double area = obj.get("area").getAsDouble();
+        ObjectNode obj = result.asJsonObject();
+        double area = obj.get("area").asDouble();
         assertTrue(area > 314 && area < 315);
     }
 
@@ -107,13 +111,13 @@ public class UserDefinedFunctionsTest {
             "}\n" +
             "{ tax: calculateTax(100) }";
         
-        JsonObject input = new JsonObject();
+        ObjectNode input = JsonUtil.createObject();
 
         MorphiumEngine engine = new MorphiumEngine();
-        JsonElement result = engine.transformFromString(transform, input);
+        JsonNode result = engine.transformFromString(transform, input);
 
-        JsonObject obj = result.getAsJsonObject();
-        assertEquals(10.0, obj.get("tax").getAsDouble(), 0.01);
+        ObjectNode obj = result.asJsonObject();
+        assertEquals(10.0, obj.get("tax").asDouble(), 0.01);
     }
 
     @Test
@@ -122,16 +126,16 @@ public class UserDefinedFunctionsTest {
             "function double(x) { return x * 2 }\n" +
             "{ doubled: map(input.numbers, \"n\", double(n)) }";
         
-        JsonObject input = new JsonObject();
-        input.add("numbers", gson.fromJson("[1,2,3,4,5]", JsonElement.class));
+        ObjectNode input = JsonUtil.createObject();
+        input.set("numbers", gson.fromJson("[1,2,3,4,5]", JsonNode.class));
 
         MorphiumEngine engine = new MorphiumEngine();
-        JsonElement result = engine.transformFromString(transform, input);
+        JsonNode result = engine.transformFromString(transform, input);
 
-        JsonObject obj = result.getAsJsonObject();
-        assertEquals(5, obj.get("doubled").getAsJsonArray().size());
-        assertEquals(2, obj.get("doubled").getAsJsonArray().get(0).getAsInt());
-        assertEquals(10, obj.get("doubled").getAsJsonArray().get(4).getAsInt());
+        ObjectNode obj = result.asJsonObject();
+        assertEquals(5, obj.get("doubled").asJsonArray().size());
+        assertEquals(2, obj.get("doubled").asJsonArray().get(0).asInt());
+        assertEquals(10, obj.get("doubled").asJsonArray().get(4).asInt());
     }
 
     @Test
@@ -140,13 +144,13 @@ public class UserDefinedFunctionsTest {
             "function double(x) => x * 2\n" +
             "{ result: double(21) }";
         
-        JsonObject input = new JsonObject();
+        ObjectNode input = JsonUtil.createObject();
 
         MorphiumEngine engine = new MorphiumEngine();
-        JsonElement result = engine.transformFromString(transform, input);
+        JsonNode result = engine.transformFromString(transform, input);
 
-        JsonObject obj = result.getAsJsonObject();
-        assertEquals(42, obj.get("result").getAsInt());
+        ObjectNode obj = result.asJsonObject();
+        assertEquals(42, obj.get("result").asInt());
     }
 
     @Test
@@ -172,22 +176,22 @@ public class UserDefinedFunctionsTest {
             "{ \"name\": \"B\", \"price\": 20, \"qty\": 1 }" +
             "] }";
         
-        JsonObject input = gson.fromJson(inputJson, JsonObject.class);
+        ObjectNode input = gson.fromJson(inputJson, ObjectNode.class);
 
         MorphiumEngine engine = new MorphiumEngine();
-        JsonElement result = engine.transformFromString(transform, input);
+        JsonNode result = engine.transformFromString(transform, input);
 
-        JsonObject obj = result.getAsJsonObject();
-        assertEquals(2, obj.get("items").getAsJsonArray().size());
+        ObjectNode obj = result.asJsonObject();
+        assertEquals(2, obj.get("items").asJsonArray().size());
         
         // First item: (10 * 2) * 1.08 = 21.6
-        double total1 = obj.get("items").getAsJsonArray().get(0)
-            .getAsJsonObject().get("total").getAsDouble();
+        double total1 = obj.get("items").asJsonArray().get(0)
+            .asJsonObject().get("total").asDouble();
         assertEquals(21.6, total1, 0.01);
         
         // Second item: (20 * 1) * 1.08 = 21.6
-        double total2 = obj.get("items").getAsJsonArray().get(1)
-            .getAsJsonObject().get("total").getAsDouble();
+        double total2 = obj.get("items").asJsonArray().get(1)
+            .asJsonObject().get("total").asDouble();
         assertEquals(21.6, total2, 0.01);
     }
 }

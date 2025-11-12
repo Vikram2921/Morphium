@@ -1,65 +1,58 @@
 package com.morphium;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.morphium.core.MorphiumEngine;
-
-import java.io.IOException;
+import com.morphium.util.JsonUtil;
 
 public class Demo {
     public static void main(String[] args) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        ObjectMapper mapper = new ObjectMapper();
         MorphiumEngine engine = new MorphiumEngine();
 
         System.out.println("=== Morphium DSL Demo - Enhanced Features ===\n");
 
-        // Demo 1: Simple transformation
-        demo1(engine, gson);
-
-        // Demo 2: Array operations
-        demo2(engine, gson);
-
-        // Demo 3: Safe navigation
-        demo3(engine, gson);
-
-        // Demo 4: String operations
-        demo4(engine, gson);
-
-        // Demo 5: User-defined functions
-        demo5(engine, gson);
-
-        // Demo 6: Global variables
-        demo6(engine, gson);
-
-        // Demo 7: Functions calling functions
-        demo7(engine, gson);
+        demo1(engine, mapper);
+        demo2(engine, mapper);
+        demo3(engine, mapper);
+        demo4(engine, mapper);
+        demo5(engine, mapper);
+        demo6(engine, mapper);
+        demo7(engine, mapper);
     }
 
-    private static void demo1(MorphiumEngine engine, Gson gson) {
+    private static void demo1(MorphiumEngine engine, ObjectMapper mapper) {
         System.out.println("--- Demo 1: Flatten and Rename ---");
         
         String transform = "{ fullName: input.person.first + \" \" + input.person.last, years: input.age }";
         
-        JsonObject input = new JsonObject();
-        JsonObject person = new JsonObject();
-        person.addProperty("first", "Alice");
-        person.addProperty("last", "Smith");
-        input.add("person", person);
-        input.addProperty("age", 28);
+        ObjectNode input = JsonUtil.createObject();
+        ObjectNode person = JsonUtil.createObject();
+        person.put("first", "Alice");
+        person.put("last", "Smith");
+        input.set("person", person);
+        input.put("age", 28);
 
         System.out.println("Input:");
-        System.out.println(gson.toJson(input));
+        try {
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(input));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
-        JsonElement result = engine.transformFromString(transform, input);
+        JsonNode result = engine.transformFromString(transform, input);
         
         System.out.println("\nOutput:");
-        System.out.println(gson.toJson(result));
+        try {
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         System.out.println();
     }
 
-    private static void demo2(MorphiumEngine engine, Gson gson) {
+    private static void demo2(MorphiumEngine engine, ObjectMapper mapper) {
         System.out.println("--- Demo 2: Array Operations ---");
         
         String transform = "{ " +
@@ -72,19 +65,23 @@ public class Demo {
             "{ \"id\": \"C\", \"qty\": 1, \"price\": 20 }" +
             "] }";
         
-        JsonObject input = gson.fromJson(inputJson, JsonObject.class);
-        
-        System.out.println("Input:");
-        System.out.println(gson.toJson(input));
-        
-        JsonElement result = engine.transformFromString(transform, input);
-        
-        System.out.println("\nOutput:");
-        System.out.println(gson.toJson(result));
-        System.out.println();
+        try {
+            ObjectNode input = (ObjectNode) mapper.readTree(inputJson);
+            
+            System.out.println("Input:");
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(input));
+            
+            JsonNode result = engine.transformFromString(transform, input);
+            
+            System.out.println("\nOutput:");
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+            System.out.println();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private static void demo3(MorphiumEngine engine, Gson gson) {
+    private static void demo3(MorphiumEngine engine, ObjectMapper mapper) {
         System.out.println("--- Demo 3: Safe Navigation ---");
         
         String transform = "{ " +
@@ -92,21 +89,29 @@ public class Demo {
             "itemCount: len(input.order?.items ?? []) " +
             "}";
         
-        JsonObject input = new JsonObject();
-        JsonObject order = new JsonObject();
-        input.add("order", order);
+        ObjectNode input = JsonUtil.createObject();
+        ObjectNode order = JsonUtil.createObject();
+        input.set("order", order);
         
         System.out.println("Input:");
-        System.out.println(gson.toJson(input));
+        try {
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(input));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
-        JsonElement result = engine.transformFromString(transform, input);
+        JsonNode result = engine.transformFromString(transform, input);
         
         System.out.println("\nOutput:");
-        System.out.println(gson.toJson(result));
+        try {
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         System.out.println();
     }
 
-    private static void demo4(MorphiumEngine engine, Gson gson) {
+    private static void demo4(MorphiumEngine engine, ObjectMapper mapper) {
         System.out.println("--- Demo 4: String Operations ---");
         
         String transform = "{ " +
@@ -122,19 +127,23 @@ public class Demo {
             "\"tags\": [\"developer\", \"java\", \"morphium\"] " +
             "}";
         
-        JsonObject input = gson.fromJson(inputJson, JsonObject.class);
-        
-        System.out.println("Input:");
-        System.out.println(gson.toJson(input));
-        
-        JsonElement result = engine.transformFromString(transform, input);
-        
-        System.out.println("\nOutput:");
-        System.out.println(gson.toJson(result));
-        System.out.println();
+        try {
+            ObjectNode input = (ObjectNode) mapper.readTree(inputJson);
+            
+            System.out.println("Input:");
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(input));
+            
+            JsonNode result = engine.transformFromString(transform, input);
+            
+            System.out.println("\nOutput:");
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+            System.out.println();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private static void demo5(MorphiumEngine engine, Gson gson) {
+    private static void demo5(MorphiumEngine engine, ObjectMapper mapper) {
         System.out.println("--- Demo 5: User-Defined Functions ---");
         
         String transform = 
@@ -155,19 +164,23 @@ public class Demo {
             "{ \"id\": \"B\", \"price\": 200 }" +
             "] }";
         
-        JsonObject input = gson.fromJson(inputJson, JsonObject.class);
-        
-        System.out.println("Input:");
-        System.out.println(gson.toJson(input));
-        
-        JsonElement result = engine.transformFromString(transform, input);
-        
-        System.out.println("\nOutput:");
-        System.out.println(gson.toJson(result));
-        System.out.println();
+        try {
+            ObjectNode input = (ObjectNode) mapper.readTree(inputJson);
+            
+            System.out.println("Input:");
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(input));
+            
+            JsonNode result = engine.transformFromString(transform, input);
+            
+            System.out.println("\nOutput:");
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+            System.out.println();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private static void demo6(MorphiumEngine engine, Gson gson) {
+    private static void demo6(MorphiumEngine engine, ObjectMapper mapper) {
         System.out.println("--- Demo 6: Global Variables ---");
         
         String transform = 
@@ -188,19 +201,23 @@ public class Demo {
             "{ \"radius\": 10 }" +
             "] }";
         
-        JsonObject input = gson.fromJson(inputJson, JsonObject.class);
-        
-        System.out.println("Input:");
-        System.out.println(gson.toJson(input));
-        
-        JsonElement result = engine.transformFromString(transform, input);
-        
-        System.out.println("\nOutput:");
-        System.out.println(gson.toJson(result));
-        System.out.println();
+        try {
+            ObjectNode input = (ObjectNode) mapper.readTree(inputJson);
+            
+            System.out.println("Input:");
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(input));
+            
+            JsonNode result = engine.transformFromString(transform, input);
+            
+            System.out.println("\nOutput:");
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+            System.out.println();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private static void demo7(MorphiumEngine engine, Gson gson) {
+    private static void demo7(MorphiumEngine engine, ObjectMapper mapper) {
         System.out.println("--- Demo 7: Functions Calling Functions ---");
         
         String transform = 
@@ -214,16 +231,24 @@ public class Demo {
             "  sumOfSquares: sumOfSquares(3, 4)\n" +
             "}";
         
-        JsonObject input = new JsonObject();
-        input.addProperty("value", 5);
+        ObjectNode input = JsonUtil.createObject();
+        input.put("value", 5);
         
         System.out.println("Input:");
-        System.out.println(gson.toJson(input));
+        try {
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(input));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
-        JsonElement result = engine.transformFromString(transform, input);
+        JsonNode result = engine.transformFromString(transform, input);
         
         System.out.println("\nOutput:");
-        System.out.println(gson.toJson(result));
+        try {
+            System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         System.out.println();
     }
 }

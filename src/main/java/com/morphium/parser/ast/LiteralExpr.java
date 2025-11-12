@@ -1,7 +1,7 @@
 package com.morphium.parser.ast;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.*;
 import com.morphium.runtime.Context;
 
 public class LiteralExpr implements Expression {
@@ -12,15 +12,18 @@ public class LiteralExpr implements Expression {
     }
 
     @Override
-    public JsonElement evaluate(Context context) {
+    public JsonNode evaluate(Context context) {
         if (value == null) {
-            return com.google.gson.JsonNull.INSTANCE;
+            return NullNode.getInstance();
         } else if (value instanceof Boolean) {
-            return new JsonPrimitive((Boolean) value);
+            return BooleanNode.valueOf((Boolean) value);
         } else if (value instanceof Number) {
-            return new JsonPrimitive((Number) value);
+            if (value instanceof Integer || value instanceof Long) {
+                return IntNode.valueOf(((Number) value).intValue());
+            }
+            return DoubleNode.valueOf(((Number) value).doubleValue());
         } else if (value instanceof String) {
-            return new JsonPrimitive((String) value);
+            return TextNode.valueOf((String) value);
         }
         throw new RuntimeException("Unknown literal type: " + value.getClass());
     }

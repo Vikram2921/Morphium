@@ -1,8 +1,8 @@
 package com.morphium.parser.ast;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.runtime.Context;
 
 public interface Expression {
-    JsonElement evaluate(Context context);
+    JsonNode evaluate(Context context);
 }

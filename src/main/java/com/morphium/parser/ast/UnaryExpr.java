@@ -1,7 +1,9 @@
 package com.morphium.parser.ast;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
+import com.morphium.util.JsonUtil;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.*;
 import com.morphium.runtime.Context;
 
 public class UnaryExpr implements Expression {
@@ -18,39 +20,39 @@ public class UnaryExpr implements Expression {
     }
 
     @Override
-    public JsonElement evaluate(Context context) {
-        JsonElement value = operand.evaluate(context);
+    public JsonNode evaluate(Context context) {
+        JsonNode value = operand.evaluate(context);
         
         switch (operator) {
             case NOT:
-                return new JsonPrimitive(!isTruthy(value));
+                return JsonUtil.createPrimitive(!isTruthy(value));
             case MINUS:
-                return new JsonPrimitive(-asNumber(value));
+                return JsonUtil.createPrimitive(-asNumber(value));
             default:
                 throw new RuntimeException("Unknown unary operator: " + operator);
         }
     }
 
-    private boolean isTruthy(JsonElement value) {
-        if (value == null || value.isJsonNull()) return false;
-        if (value.isJsonPrimitive()) {
-            if (value.getAsJsonPrimitive().isBoolean()) {
-                return value.getAsBoolean();
+    private boolean isTruthy(JsonNode value) {
+        if (value == null || value.isNull()) return false;
+        if (value.isValueNode()) {
+            if (value.isBoolean()) {
+                return value.asBoolean();
             }
-            if (value.getAsJsonPrimitive().isNumber()) {
-                return value.getAsDouble() != 0;
+            if (value.isNumber()) {
+                return value.asDouble() != 0;
             }
-            if (value.getAsJsonPrimitive().isString()) {
-                return !value.getAsString().isEmpty();
+            if (value.isTextual()) {
+                return !value.asText().isEmpty();
             }
         }
         return true;
     }
 
-    private double asNumber(JsonElement value) {
-        if (value == null || value.isJsonNull()) return 0;
-        if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isNumber()) {
-            return value.getAsDouble();
+    private double asNumber(JsonNode value) {
+        if (value == null || value.isNull()) return 0;
+        if (value.isValueNode() && value.isNumber()) {
+            return value.asDouble();
         }
         return 0;
     }

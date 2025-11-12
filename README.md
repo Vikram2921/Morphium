@@ -1,150 +1,154 @@
 # Morphium DSL
 
-A JavaScript-like JSON transformation DSL for Java developers with **user-defined functions**, **modules**, and **global/local variables**.
+A JavaScript-like JSON transformation DSL for Java with user-defined functions, modules, and global/local variables.
 
-## Design Goals
+## Key Features
 
-- **Familiar Syntax**: Looks and feels like JavaScript expressions/objects
-- **Functional/Immutable**: Expressions return new JSON values by default
-- **Minimal Keywords**: `let`, `function`, `global`, `import`, `export`
-- **Rich Built-ins**: Common operations (map/filter/merge/format/date/string)
-- **Extensible**: Easy registration of Java functions under namespaces
-- **User Functions**: Define your own reusable functions
-- **Module System**: Import and share code across transforms
+- ✅ **JavaScript-like syntax** - Familiar to JS developers
+- ✅ **User-defined functions** - Create reusable logic
+- ✅ **Global & local variables** - Proper scoping
+- ✅ **Module system** - Import and export functions
+- ✅ **Rich built-ins** - map, filter, reduce, merge, and 20+ functions
+- ✅ **Jackson-based** - Uses `JsonNode` instead of Gson
+- ✅ **Custom functions** - Implement `MorphiumFunction` interface
 
 ## Quick Start
 
 ```java
 import com.morphium.core.MorphiumEngine;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.morphium.util.JsonUtil;
 
 MorphiumEngine engine = new MorphiumEngine();
-JsonObject input = ...; // your input JSON
-JsonElement output = engine.transform("path/to/transform.morph", input);
+
+// Create input
+ObjectNode input = JsonUtil.createObject();
+input.put("value", 42);
+
+// Transform
+String transform = "{ doubled: input.value * 2 }";
+JsonNode output = engine.transformFromString(transform, input);
 ```
 
-## Transform Example
+## Custom Functions
 
+Implement the `MorphiumFunction` interface:
+
+```java
+import com.morphium.function.MorphiumFunction;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.DoubleNode;
+
+public class AddFunction implements MorphiumFunction {
+    @Override
+    public String getName() {
+        return "add";
+    }
+    
+    @Override
+    public int getMinParams() {
+        return 2;
+    }
+    
+    @Override
+    public int getMaxParams() {
+        return 2;
+    }
+    
+    @Override
+    public JsonNode call(JsonNode root, JsonNode[] params) {
+        double a = params[0].asDouble();
+        double b = params[1].asDouble();
+        return DoubleNode.valueOf(a + b);
+    }
+}
+
+// Register and use
+engine.registerFunction(new AddFunction());
+String transform = "{ sum: add(input.a, input.b) }";
+```
+
+## Transform Examples
+
+### User-Defined Functions
 ```javascript
-// Define reusable functions
 function calculateTax(amount, rate) {
   return amount * rate
 }
 
-function formatPrice(value) {
-  return "$" + toString(value)
+{
+  price: input.price,
+  tax: calculateTax(input.price, 0.1),
+  total: input.price + calculateTax(input.price, 0.1)
+}
+```
+
+### Global Variables
+```javascript
+global TAX_RATE = 0.08
+global DISCOUNT = 0.15
+
+function applyTax(amount) {
+  return amount * (1 + TAX_RATE)
 }
 
-// Use functions in transformations
+{ finalPrice: applyTax(input.price * (1 - DISCOUNT)) }
+```
+
+### Array Operations
+```javascript
 {
   items: map(input.items, "it", {
     id: it.id,
-    price: it.price,
-    tax: calculateTax(it.price, 0.1),
-    total: formatPrice(it.price + calculateTax(it.price, 0.1))
-  })
+    total: it.qty * it.price
+  }),
+  filtered: filter(input.items, "it", it.price > 100)
 }
 ```
 
-## Core Features
+## Built-in Functions
 
-### Values & Syntax
-- Numbers, strings (`"..."`), booleans (`true`/`false`), `null`
-- Objects: `{ key: expr, "quoted-key": expr, [computed]: expr }`
-- Arrays: `[ expr, expr, ... ]`
-- Comments: `//` single-line and `/* multi-line */`
+- **Array**: `map`, `filter`, `reduce`, `pluck`, `indexBy`
+- **Object**: `merge`, `get`, `set`
+- **String**: `upper`, `lower`, `trim`, `split`, `join`, `replace`
+- **Utility**: `len`, `exists`, `now`, `formatDate`
+- **Conversion**: `toNumber`, `toString`, `toBool`
+- **JSON**: `jsonParse`, `jsonStringify`
 
-### Operators
-- Arithmetic: `+ - * / %`
-- Comparisons: `== === != !== < <= > >=`
-- Logical: `&& || !`
-- Ternary: `cond ? a : b`
-- Null coalescing: `a ?? b`
-- Safe navigation: `a?.b`, `a?.[0]`
+## Building
 
-### Variables
-```javascript
-let x = expr  // block-local, immutable binding
+```bash
+mvn clean install
 ```
 
-### Built-in Functions
+## Running Demo
 
-**Array operations:**
-- `map(array, "itemName", expr)` - Transform each element
-- `filter(array, "itemName", predicateExpr)` - Filter elements
-- `reduce(array, "accName", "itemName", init, expr)` - Reduce array
-- `pluck(array, key)` - Extract property from each item
-- `indexBy(array, key)` - Create lookup map by key
-
-**Object operations:**
-- `merge(obj1, obj2, ...)` - Deep merge objects
-- `get(obj, "path.to.node")` - Safe path lookup
-- `set(obj, "path.to.node", value)` - Immutable update
-
-**Utilities:**
-- `exists(x)` - Check if value exists and is not null
-- `len(x)` - Length of array or string
-- `now()` - Current ISO timestamp
-- `formatDate(dateStr, fmt)` - Format/parse dates
-
-**String operations:**
-- `split(str, sep)`, `join(array, sep)`
-- `upper(str)`, `lower(str)`, `trim(str)`
-- `replace(str, pattern, replacement)`
-
-**Type conversions:**
-- `toNumber(x)`, `toString(x)`, `toBool(x)`
-- `jsonParse(str)`, `jsonStringify(value)`
-
-### Modules
-
-```javascript
-// utils.morph
-export helpers = {
-  formatPrice: (v) => "$" + toNumber(v).toFixed(2)
-}
-
-// main.morph
-import "utils.morph" as utils
-{
-  price: utils.helpers.formatPrice(input.amount)
-}
+```bash
+mvn exec:java -Dexec.mainClass=com.morphium.Demo
 ```
 
-## Documentation
+## Testing
 
-- **[GETTING_STARTED.md](GETTING_STARTED.md)** - Complete user guide
-- **[USER_FUNCTIONS_GUIDE.md](USER_FUNCTIONS_GUIDE.md)** - Functions, globals & modules
-- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Quick reference card
-- **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Technical implementation details
-
-## New Features
-
-### User-Defined Functions
-Create reusable functions with parameters and local variables:
-```javascript
-function formatUserName(first, last) {
-  let capitalized = upper(first) + " " + upper(last)
-  return trim(capitalized)
-}
+```bash
+mvn test
 ```
 
-### Global & Local Variables
-- **Global**: Shared across entire transform and all functions
-- **Local**: Scoped to function or block
+## Migration from Gson
 
-### Module System
-Split transforms into reusable modules:
-```javascript
-// validators.morph
-export isEmail = function(s) { ... }
+This project uses Jackson instead of Gson:
+- `JsonElement` → `JsonNode`
+- `JsonObject` → `ObjectNode`
+- `JsonArray` → `ArrayNode`
+- `JsonPrimitive` → `TextNode`, `IntNode`, `DoubleNode`, `BooleanNode`
+- `JsonNull.INSTANCE` → `NullNode.getInstance()`
 
-// main.morph
-import "validators.morph" as v
-filter(input.users, "u", v.isEmail(u.email))
+Use `JsonUtil` helper class for creating nodes:
+```java
+ObjectNode obj = JsonUtil.createObject();
+ArrayNode arr = JsonUtil.createArray();
+JsonNode primitive = JsonUtil.createPrimitive(value);
 ```
-
-See **[USER_FUNCTIONS_GUIDE.md](USER_FUNCTIONS_GUIDE.md)** for complete examples.
 
 ## License
 

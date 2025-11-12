@@ -1,7 +1,9 @@
 package com.morphium.parser.ast;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
+import com.morphium.util.JsonUtil;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.*;
 import com.morphium.runtime.Context;
 
 public class BinaryExpr implements Expression {
@@ -22,7 +24,7 @@ public class BinaryExpr implements Expression {
     }
 
     @Override
-    public JsonElement evaluate(Context context) {
+    public JsonNode evaluate(Context context) {
         switch (operator) {
             case AND:
                 return evaluateAnd(context);
@@ -31,111 +33,111 @@ public class BinaryExpr implements Expression {
             case NULL_COALESCE:
                 return evaluateNullCoalesce(context);
             default:
-                JsonElement leftVal = left.evaluate(context);
-                JsonElement rightVal = right.evaluate(context);
+                JsonNode leftVal = left.evaluate(context);
+                JsonNode rightVal = right.evaluate(context);
                 return evaluateOperator(leftVal, rightVal);
         }
     }
 
-    private JsonElement evaluateAnd(Context context) {
-        JsonElement leftVal = left.evaluate(context);
+    private JsonNode evaluateAnd(Context context) {
+        JsonNode leftVal = left.evaluate(context);
         if (!isTruthy(leftVal)) return leftVal;
         return right.evaluate(context);
     }
 
-    private JsonElement evaluateOr(Context context) {
-        JsonElement leftVal = left.evaluate(context);
+    private JsonNode evaluateOr(Context context) {
+        JsonNode leftVal = left.evaluate(context);
         if (isTruthy(leftVal)) return leftVal;
         return right.evaluate(context);
     }
 
-    private JsonElement evaluateNullCoalesce(Context context) {
-        JsonElement leftVal = left.evaluate(context);
-        if (leftVal != null && !leftVal.isJsonNull()) return leftVal;
+    private JsonNode evaluateNullCoalesce(Context context) {
+        JsonNode leftVal = left.evaluate(context);
+        if (leftVal != null && !leftVal.isNull()) return leftVal;
         return right.evaluate(context);
     }
 
-    private JsonElement evaluateOperator(JsonElement leftVal, JsonElement rightVal) {
+    private JsonNode evaluateOperator(JsonNode leftVal, JsonNode rightVal) {
         switch (operator) {
             case ADD:
                 if (isString(leftVal) || isString(rightVal)) {
-                    return new JsonPrimitive(asString(leftVal) + asString(rightVal));
+                    return JsonUtil.createPrimitive(asString(leftVal) + asString(rightVal));
                 }
-                return new JsonPrimitive(asNumber(leftVal) + asNumber(rightVal));
+                return JsonUtil.createPrimitive(asNumber(leftVal) + asNumber(rightVal));
             case SUBTRACT:
-                return new JsonPrimitive(asNumber(leftVal) - asNumber(rightVal));
+                return JsonUtil.createPrimitive(asNumber(leftVal) - asNumber(rightVal));
             case MULTIPLY:
-                return new JsonPrimitive(asNumber(leftVal) * asNumber(rightVal));
+                return JsonUtil.createPrimitive(asNumber(leftVal) * asNumber(rightVal));
             case DIVIDE:
-                return new JsonPrimitive(asNumber(leftVal) / asNumber(rightVal));
+                return JsonUtil.createPrimitive(asNumber(leftVal) / asNumber(rightVal));
             case MODULO:
-                return new JsonPrimitive(asNumber(leftVal) % asNumber(rightVal));
+                return JsonUtil.createPrimitive(asNumber(leftVal) % asNumber(rightVal));
             case EQ:
             case EQ_STRICT:
-                return new JsonPrimitive(areEqual(leftVal, rightVal));
+                return JsonUtil.createPrimitive(areEqual(leftVal, rightVal));
             case NE:
             case NE_STRICT:
-                return new JsonPrimitive(!areEqual(leftVal, rightVal));
+                return JsonUtil.createPrimitive(!areEqual(leftVal, rightVal));
             case LT:
-                return new JsonPrimitive(asNumber(leftVal) < asNumber(rightVal));
+                return JsonUtil.createPrimitive(asNumber(leftVal) < asNumber(rightVal));
             case LE:
-                return new JsonPrimitive(asNumber(leftVal) <= asNumber(rightVal));
+                return JsonUtil.createPrimitive(asNumber(leftVal) <= asNumber(rightVal));
             case GT:
-                return new JsonPrimitive(asNumber(leftVal) > asNumber(rightVal));
+                return JsonUtil.createPrimitive(asNumber(leftVal) > asNumber(rightVal));
             case GE:
-                return new JsonPrimitive(asNumber(leftVal) >= asNumber(rightVal));
+                return JsonUtil.createPrimitive(asNumber(leftVal) >= asNumber(rightVal));
             default:
                 throw new RuntimeException("Unknown operator: " + operator);
         }
     }
 
-    private boolean isTruthy(JsonElement value) {
-        if (value == null || value.isJsonNull()) return false;
-        if (value.isJsonPrimitive()) {
-            if (value.getAsJsonPrimitive().isBoolean()) {
-                return value.getAsBoolean();
+    private boolean isTruthy(JsonNode value) {
+        if (value == null || value.isNull()) return false;
+        if (value.isValueNode()) {
+            if (value.isBoolean()) {
+                return value.asBoolean();
             }
-            if (value.getAsJsonPrimitive().isNumber()) {
-                return value.getAsDouble() != 0;
+            if (value.isNumber()) {
+                return value.asDouble() != 0;
             }
-            if (value.getAsJsonPrimitive().isString()) {
-                return !value.getAsString().isEmpty();
+            if (value.isTextual()) {
+                return !value.asText().isEmpty();
             }
         }
         return true;
     }
 
-    private boolean areEqual(JsonElement a, JsonElement b) {
+    private boolean areEqual(JsonNode a, JsonNode b) {
         if (a == null && b == null) return true;
         if (a == null || b == null) return false;
-        if (a.isJsonNull() && b.isJsonNull()) return true;
-        if (a.isJsonNull() || b.isJsonNull()) return false;
+        if (a.isNull() && b.isNull()) return true;
+        if (a.isNull() || b.isNull()) return false;
         
-        if (a.isJsonPrimitive() && b.isJsonPrimitive()) {
-            return a.getAsString().equals(b.getAsString());
+        if (a.isValueNode() && b.isValueNode()) {
+            return a.asText().equals(b.asText());
         }
         
         return a.equals(b);
     }
 
-    private boolean isString(JsonElement value) {
-        return value != null && value.isJsonPrimitive() && value.getAsJsonPrimitive().isString();
+    private boolean isString(JsonNode value) {
+        return value != null && value.isValueNode() && value.isTextual();
     }
 
-    private String asString(JsonElement value) {
-        if (value == null || value.isJsonNull()) return "null";
-        if (value.isJsonPrimitive()) return value.getAsString();
+    private String asString(JsonNode value) {
+        if (value == null || value.isNull()) return "null";
+        if (value.isValueNode()) return value.asText();
         return value.toString();
     }
 
-    private double asNumber(JsonElement value) {
-        if (value == null || value.isJsonNull()) return 0;
-        if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isNumber()) {
-            return value.getAsDouble();
+    private double asNumber(JsonNode value) {
+        if (value == null || value.isNull()) return 0;
+        if (value.isValueNode() && value.isNumber()) {
+            return value.asDouble();
         }
-        if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()) {
+        if (value.isValueNode() && value.isTextual()) {
             try {
-                return Double.parseDouble(value.getAsString());
+                return Double.parseDouble(value.asText());
             } catch (NumberFormatException e) {
                 return 0;
             }

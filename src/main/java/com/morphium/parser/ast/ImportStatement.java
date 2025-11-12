@@ -1,6 +1,8 @@
 package com.morphium.parser.ast;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.node.*;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.runtime.Context;
 
 import java.util.List;
@@ -17,10 +19,10 @@ public class ImportStatement implements Expression {
     }
 
     @Override
-    public JsonElement evaluate(Context context) {
+    public JsonNode evaluate(Context context) {
         // Module loading is handled by the engine
         // This is just a marker node
-        return com.google.gson.JsonNull.INSTANCE;
+        return com.fasterxml.jackson.databind.node.NullNode.getInstance();
     }
 
     public String getModulePath() {
