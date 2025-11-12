@@ -274,6 +274,9 @@ public class PlaygroundHtml {
 "                    <button class=\"example-btn\" onclick=\"loadExample('conditional')\">Conditional</button>\n" +
 "                    <button class=\"example-btn\" onclick=\"loadExample('function')\">Custom Function</button>\n" +
 "                    <button class=\"example-btn\" onclick=\"loadExample('variables')\">$ Variables</button>\n" +
+"                    <button class=\"example-btn\" onclick=\"loadExample('streams')\">Streams API</button>\n" +
+"                    <button class=\"example-btn\" onclick=\"loadExample('advanced')\">Advanced Streams</button>\n" +
+"                    <button class=\"example-btn\" onclick=\"loadExample('aggregation')\">Aggregation</button>\n" +
 "                </div>\n" +
 "            </div>\n" +
 "        </div>\n" +
@@ -468,6 +471,97 @@ public class PlaygroundHtml {
 "      {\"id\": \"B\", \"name\": \"Item B\", \"value\": 20}\n" +
 "    ]\n" +
 "  }\n" +
+"}`\n" +
+"    },\n" +
+"    streams: {\n" +
+"        transform: `// Java Streams API equivalent\n" +
+"let numbers = $.numbers\n" +
+"\n" +
+"{\n" +
+"  // Basic operations\n" +
+"  first: findFirst(numbers, \"n\", n > 5),\n" +
+"  hasLarge: anyMatch(numbers, \"n\", n > 100),\n" +
+"  allPositive: allMatch(numbers, \"n\", n > 0),\n" +
+"  count: count(numbers),\n" +
+"  \n" +
+"  // Transformations\n" +
+"  doubled: map(numbers, \"n\", n * 2),\n" +
+"  filtered: filter(numbers, \"n\", n >= 10),\n" +
+"  sorted: sorted(numbers),\n" +
+"  distinct: distinct($.duplicates),\n" +
+"  \n" +
+"  // Limit and skip\n" +
+"  first3: limit(numbers, 3),\n" +
+"  skip2: skip(numbers, 2),\n" +
+"  sliced: slice(numbers, 1, 4)\n" +
+"}`,\n" +
+"        input: `{\n" +
+"  \"numbers\": [3, 7, 12, 5, 18, 9, 15],\n" +
+"  \"duplicates\": [1, 2, 2, 3, 3, 3, 4]\n" +
+"}`\n" +
+"    },\n" +
+"    advanced: {\n" +
+"        transform: `// Advanced stream operations\n" +
+"let users = $.users\n" +
+"\n" +
+"{\n" +
+"  // FlatMap - flatten nested arrays\n" +
+"  allTags: distinct(flatMap(users, \"u\", u.tags)),\n" +
+"  \n" +
+"  // GroupBy\n" +
+"  byStatus: groupBy(users, \"status\"),\n" +
+"  byAge: groupBy(users, \"age\"),\n" +
+"  \n" +
+"  // Partition\n" +
+"  activeUsers: partition(users, \"u\", u.active),\n" +
+"  \n" +
+"  // Reverse and concat\n" +
+"  reversed: reverse(users),\n" +
+"  combined: concat(filter(users, \"u\", u.age < 25), filter(users, \"u\", u.age >= 25))\n" +
+"}`,\n" +
+"        input: `{\n" +
+"  \"users\": [\n" +
+"    {\"name\": \"Alice\", \"age\": 25, \"status\": \"active\", \"active\": true, \"tags\": [\"admin\", \"user\"]},\n" +
+"    {\"name\": \"Bob\", \"age\": 30, \"status\": \"inactive\", \"active\": false, \"tags\": [\"user\"]},\n" +
+"    {\"name\": \"Charlie\", \"age\": 25, \"status\": \"active\", \"active\": true, \"tags\": [\"user\", \"guest\"]}\n" +
+"  ]\n" +
+"}`\n" +
+"    },\n" +
+"    aggregation: {\n" +
+"        transform: `// Aggregation functions\n" +
+"let products = $.products\n" +
+"let prices = pluck(products, \"price\")\n" +
+"let quantities = pluck(products, \"quantity\")\n" +
+"\n" +
+"{\n" +
+"  products: products,\n" +
+"  totalProducts: count(products),\n" +
+"  \n" +
+"  priceStats: {\n" +
+"    sum: sum(prices),\n" +
+"    avg: avg(prices),\n" +
+"    min: min(prices),\n" +
+"    max: max(prices)\n" +
+"  },\n" +
+"  \n" +
+"  totalRevenue: reduce(\n" +
+"    products,\n" +
+"    \"acc\",\n" +
+"    \"p\",\n" +
+"    0,\n" +
+"    acc + (p.price * p.quantity)\n" +
+"  ),\n" +
+"  \n" +
+"  expensiveProducts: count(products, \"p\", p.price > 50),\n" +
+"  sortedByPrice: sorted(products, \"price\")\n" +
+"}`,\n" +
+"        input: `{\n" +
+"  \"products\": [\n" +
+"    {\"name\": \"Widget\", \"price\": 29.99, \"quantity\": 10},\n" +
+"    {\"name\": \"Gadget\", \"price\": 79.99, \"quantity\": 5},\n" +
+"    {\"name\": \"Doohickey\", \"price\": 19.99, \"quantity\": 15},\n" +
+"    {\"name\": \"Thingamajig\", \"price\": 49.99, \"quantity\": 8}\n" +
+"  ]\n" +
 "}`\n" +
 "    }\n" +
 "};\n" +

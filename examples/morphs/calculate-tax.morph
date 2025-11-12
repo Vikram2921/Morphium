@@ -1,0 +1,12 @@
+// Tax calculator morph file
+// Input: { amount: number }
+// Output: { amount: number, tax: number, total: number }
+
+let amount = $.amount
+let taxRate = 0.1
+
+{
+  amount: amount,
+  tax: amount * taxRate,
+  total: amount * (1 + taxRate)
+}

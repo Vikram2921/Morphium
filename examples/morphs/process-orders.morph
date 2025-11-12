@@ -1,0 +1,36 @@
+// Order processing pipeline
+// Calculates totals, applies discounts, and enriches order data
+
+let items = $.items
+let customerType = $.customerType ?? "regular"
+
+// Calculate item totals
+let enrichedItems = map(items, "item", {
+  id: item.id,
+  name: item.name,
+  price: item.price,
+  quantity: item.quantity,
+  subtotal: item.price * item.quantity
+})
+
+// Calculate totals
+let subtotal = reduce(enrichedItems, "acc", "item", 0, acc + item.subtotal)
+let discountRate = customerType == "premium" ? 0.15 : (customerType == "vip" ? 0.25 : 0)
+let discount = subtotal * discountRate
+let tax = (subtotal - discount) * 0.1
+let total = subtotal - discount + tax
+
+{
+  orderId: $.orderId,
+  customerType: customerType,
+  items: enrichedItems,
+  summary: {
+    subtotal: subtotal,
+    discount: discount,
+    discountRate: discountRate,
+    tax: tax,
+    total: total,
+    itemCount: count(items)
+  },
+  processedAt: now()
+}

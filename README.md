@@ -1,10 +1,11 @@
 # Morphium DSL
 
-A JavaScript-like JSON transformation DSL for Java with user-defined functions, modules, and global/local variables.
+A JavaScript-like JSON transformation DSL for Java with **Java Streams API equivalent** operations, user-defined functions, modules, and powerful data processing capabilities.
 
 ## 🎯 Quick Links
 
 - 🚀 **[Quick Start Guide](QUICKSTART.md)** - Get started in 5 minutes!
+- 📖 **[Complete Feature Guide](FEATURES.md)** - All features and examples
 - 🎮 **[Playground Guide](PLAYGROUND.md)** - Interactive web interface
 - 📚 **[Implementation Details](IMPLEMENTATION_SUMMARY.md)** - Architecture & design
 
@@ -30,13 +31,16 @@ Open **http://localhost:8080** in your browser for a real-time playground!
 
 - ✅ **JavaScript-like syntax** - Familiar to JS developers
 - ✅ **`$` input variable** - Use `$` to access input (like `$.name`)
+- ✅ **Java Streams API** - Complete streams equivalent (map, filter, flatMap, groupBy, partition, etc.)
 - ✅ **User-defined functions** - Create reusable logic
 - ✅ **Global & local variables** - Proper scoping with `let` and `global`
 - ✅ **Variable assignment** - Assign `$` to variables: `let root = $`
 - ✅ **Module system** - Import and export functions
-- ✅ **Rich built-ins** - map, filter, reduce, merge, and 20+ functions
+- ✅ **Run other morph files** - `runMorph("file.morph", data)`
+- ✅ **Rich built-ins** - 40+ functions (map, filter, reduce, flatMap, groupBy, sum, avg, etc.)
 - ✅ **Jackson-based** - Uses `JsonNode` instead of Gson
 - ✅ **Custom functions** - Implement `MorphiumFunction` interface
+- ✅ **Real-time playground** - Interactive web UI with auto-transform
 
 ## Quick Start
 
@@ -152,12 +156,31 @@ function applyTax(amount) {
 
 ## Built-in Functions
 
-- **Array**: `map`, `filter`, `reduce`, `pluck`, `indexBy`
-- **Object**: `merge`, `get`, `set`
-- **String**: `upper`, `lower`, `trim`, `split`, `join`, `replace`
-- **Utility**: `len`, `exists`, `now`, `formatDate`
-- **Conversion**: `toNumber`, `toString`, `toBool`
-- **JSON**: `jsonParse`, `jsonStringify`
+### Java Streams API Equivalent
+- **Filtering**: `filter`, `anyMatch`, `allMatch`, `noneMatch`, `findFirst`
+- **Mapping**: `map`, `flatMap`, `pluck`
+- **Aggregation**: `sum`, `avg`, `min`, `max`, `count`, `reduce`
+- **Sorting**: `sorted`, `reverse`, `distinct`
+- **Slicing**: `limit`, `skip`, `slice`
+- **Grouping**: `groupBy`, `partition`, `indexBy`
+- **Side Effects**: `peek`, `forEach`
+
+### Array & Object
+- **Array**: `concat`, `join`, `split`, `reverse`
+- **Object**: `merge`, `get`, `set`, `keys`, `values`, `entries`
+
+### String Operations
+- `upper`, `lower`, `trim`, `replace`, `split`, `join`
+
+### Utility Functions
+- `len`, `exists`, `now`, `formatDate`
+- `toNumber`, `toString`, `toBool`
+- `jsonParse`, `jsonStringify`
+
+### Module Execution
+- `runMorph(file, input)` - Execute another morph file
+
+👉 See **[FEATURES.md](FEATURES.md)** for complete documentation and examples.
 
 ## Building
 

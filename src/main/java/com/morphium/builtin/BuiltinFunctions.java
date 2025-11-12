@@ -20,6 +20,25 @@ public class BuiltinFunctions {
             case "map": return map(argExprs, context);
             case "filter": return filter(argExprs, context);
             case "reduce": return reduce(argExprs, context);
+            case "flatMap": return flatMap(argExprs, context);
+            case "forEach": return forEach(argExprs, context);
+            case "anyMatch": return anyMatch(argExprs, context);
+            case "allMatch": return allMatch(argExprs, context);
+            case "noneMatch": return noneMatch(argExprs, context);
+            case "findFirst": return findFirst(argExprs, context);
+            case "count": return count(argExprs, context);
+            case "distinct": return distinct(argExprs, context);
+            case "sorted": return sorted(argExprs, context);
+            case "skip": return skip(argExprs, context);
+            case "limit": return limit(argExprs, context);
+            case "peek": return peek(argExprs, context);
+            case "groupBy": return groupBy(argExprs, context);
+            case "partition": return partition(argExprs, context);
+            case "sum": return sum(argExprs, context);
+            case "avg": return avg(argExprs, context);
+            case "min": return min(argExprs, context);
+            case "max": return max(argExprs, context);
+            case "runMorph": return runMorph(argExprs, context);
         }
         
         JsonNode[] args = evaluateArgs(argExprs, context);
@@ -44,6 +63,12 @@ public class BuiltinFunctions {
             case "jsonStringify": return jsonStringify(args);
             case "get": return get(args);
             case "set": return set(args);
+            case "reverse": return reverse(args);
+            case "concat": return concat(args);
+            case "slice": return slice(args);
+            case "keys": return keys(args);
+            case "values": return values(args);
+            case "entries": return entries(args);
             default: return null;
         }
     }
@@ -349,5 +374,515 @@ public class BuiltinFunctions {
         if (node.isArray()) return !node.isEmpty();
         if (node.isObject()) return !node.isEmpty();
         return true;
+    }
+
+    // Stream-like operations
+    private static JsonNode flatMap(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 3) throw new RuntimeException("flatMap requires 3 arguments");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return JsonUtil.createArray();
+        
+        String itemName = argExprs.get(1).evaluate(context).asText();
+        Expression mapExpr = argExprs.get(2);
+        
+        ArrayNode result = JsonUtil.createArray();
+        for (JsonNode item : arrayArg) {
+            Context itemContext = new Context(context);
+            itemContext.define(itemName, item);
+            JsonNode mapped = mapExpr.evaluate(itemContext);
+            if (mapped.isArray()) {
+                for (JsonNode subItem : mapped) {
+                    result.add(subItem);
+                }
+            } else {
+                result.add(mapped);
+            }
+        }
+        
+        return result;
+    }
+
+    private static JsonNode forEach(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 3) throw new RuntimeException("forEach requires 3 arguments");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return NullNode.getInstance();
+        
+        String itemName = argExprs.get(1).evaluate(context).asText();
+        Expression forEachExpr = argExprs.get(2);
+        
+        for (JsonNode item : arrayArg) {
+            Context itemContext = new Context(context);
+            itemContext.define(itemName, item);
+            forEachExpr.evaluate(itemContext);
+        }
+        
+        return arrayArg;
+    }
+
+    private static JsonNode anyMatch(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 3) throw new RuntimeException("anyMatch requires 3 arguments");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return BooleanNode.FALSE;
+        
+        String itemName = argExprs.get(1).evaluate(context).asText();
+        Expression predicateExpr = argExprs.get(2);
+        
+        for (JsonNode item : arrayArg) {
+            Context itemContext = new Context(context);
+            itemContext.define(itemName, item);
+            JsonNode predicate = predicateExpr.evaluate(itemContext);
+            if (isTruthy(predicate)) {
+                return BooleanNode.TRUE;
+            }
+        }
+        
+        return BooleanNode.FALSE;
+    }
+
+    private static JsonNode allMatch(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 3) throw new RuntimeException("allMatch requires 3 arguments");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return BooleanNode.TRUE;
+        
+        String itemName = argExprs.get(1).evaluate(context).asText();
+        Expression predicateExpr = argExprs.get(2);
+        
+        for (JsonNode item : arrayArg) {
+            Context itemContext = new Context(context);
+            itemContext.define(itemName, item);
+            JsonNode predicate = predicateExpr.evaluate(itemContext);
+            if (!isTruthy(predicate)) {
+                return BooleanNode.FALSE;
+            }
+        }
+        
+        return BooleanNode.TRUE;
+    }
+
+    private static JsonNode noneMatch(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 3) throw new RuntimeException("noneMatch requires 3 arguments");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return BooleanNode.TRUE;
+        
+        String itemName = argExprs.get(1).evaluate(context).asText();
+        Expression predicateExpr = argExprs.get(2);
+        
+        for (JsonNode item : arrayArg) {
+            Context itemContext = new Context(context);
+            itemContext.define(itemName, item);
+            JsonNode predicate = predicateExpr.evaluate(itemContext);
+            if (isTruthy(predicate)) {
+                return BooleanNode.FALSE;
+            }
+        }
+        
+        return BooleanNode.TRUE;
+    }
+
+    private static JsonNode findFirst(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 3) throw new RuntimeException("findFirst requires 3 arguments");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return NullNode.getInstance();
+        
+        String itemName = argExprs.get(1).evaluate(context).asText();
+        Expression predicateExpr = argExprs.get(2);
+        
+        for (JsonNode item : arrayArg) {
+            Context itemContext = new Context(context);
+            itemContext.define(itemName, item);
+            JsonNode predicate = predicateExpr.evaluate(itemContext);
+            if (isTruthy(predicate)) {
+                return item;
+            }
+        }
+        
+        return NullNode.getInstance();
+    }
+
+    private static JsonNode count(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 1) throw new RuntimeException("count requires 1 argument");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return IntNode.valueOf(0);
+        
+        if (argExprs.size() < 3) {
+            return IntNode.valueOf(arrayArg.size());
+        }
+        
+        String itemName = argExprs.get(1).evaluate(context).asText();
+        Expression predicateExpr = argExprs.get(2);
+        
+        int count = 0;
+        for (JsonNode item : arrayArg) {
+            Context itemContext = new Context(context);
+            itemContext.define(itemName, item);
+            JsonNode predicate = predicateExpr.evaluate(itemContext);
+            if (isTruthy(predicate)) {
+                count++;
+            }
+        }
+        
+        return IntNode.valueOf(count);
+    }
+
+    private static JsonNode distinct(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 1) throw new RuntimeException("distinct requires 1 argument");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return JsonUtil.createArray();
+        
+        ArrayNode result = JsonUtil.createArray();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        
+        for (JsonNode item : arrayArg) {
+            String key = item.toString();
+            if (!seen.contains(key)) {
+                seen.add(key);
+                result.add(item);
+            }
+        }
+        
+        return result;
+    }
+
+    private static JsonNode sorted(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 1) throw new RuntimeException("sorted requires 1 argument");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return JsonUtil.createArray();
+        
+        java.util.List<JsonNode> list = new java.util.ArrayList<>();
+        for (JsonNode item : arrayArg) {
+            list.add(item);
+        }
+        
+        if (argExprs.size() < 2) {
+            list.sort((a, b) -> compareNodes(a, b));
+        } else {
+            String key = argExprs.get(1).evaluate(context).asText();
+            list.sort((a, b) -> {
+                JsonNode aVal = a.has(key) ? a.get(key) : NullNode.getInstance();
+                JsonNode bVal = b.has(key) ? b.get(key) : NullNode.getInstance();
+                return compareNodes(aVal, bVal);
+            });
+        }
+        
+        ArrayNode result = JsonUtil.createArray();
+        for (JsonNode item : list) {
+            result.add(item);
+        }
+        
+        return result;
+    }
+
+    private static int compareNodes(JsonNode a, JsonNode b) {
+        if (a.isNumber() && b.isNumber()) {
+            return Double.compare(a.asDouble(), b.asDouble());
+        }
+        return a.asText().compareTo(b.asText());
+    }
+
+    private static JsonNode skip(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 2) throw new RuntimeException("skip requires 2 arguments");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        int n = argExprs.get(1).evaluate(context).asInt();
+        
+        if (!arrayArg.isArray()) return JsonUtil.createArray();
+        
+        ArrayNode result = JsonUtil.createArray();
+        int index = 0;
+        for (JsonNode item : arrayArg) {
+            if (index >= n) {
+                result.add(item);
+            }
+            index++;
+        }
+        
+        return result;
+    }
+
+    private static JsonNode limit(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 2) throw new RuntimeException("limit requires 2 arguments");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        int n = argExprs.get(1).evaluate(context).asInt();
+        
+        if (!arrayArg.isArray()) return JsonUtil.createArray();
+        
+        ArrayNode result = JsonUtil.createArray();
+        int index = 0;
+        for (JsonNode item : arrayArg) {
+            if (index >= n) break;
+            result.add(item);
+            index++;
+        }
+        
+        return result;
+    }
+
+    private static JsonNode peek(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 3) throw new RuntimeException("peek requires 3 arguments");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return arrayArg;
+        
+        String itemName = argExprs.get(1).evaluate(context).asText();
+        Expression peekExpr = argExprs.get(2);
+        
+        for (JsonNode item : arrayArg) {
+            Context itemContext = new Context(context);
+            itemContext.define(itemName, item);
+            peekExpr.evaluate(itemContext);
+        }
+        
+        return arrayArg;
+    }
+
+    private static JsonNode groupBy(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 2) throw new RuntimeException("groupBy requires 2 arguments");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return JsonUtil.createObject();
+        
+        String key = argExprs.get(1).evaluate(context).asText();
+        
+        ObjectNode result = JsonUtil.createObject();
+        for (JsonNode item : arrayArg) {
+            String groupKey = item.has(key) ? item.get(key).asText() : "null";
+            if (!result.has(groupKey)) {
+                result.set(groupKey, JsonUtil.createArray());
+            }
+            ((ArrayNode) result.get(groupKey)).add(item);
+        }
+        
+        return result;
+    }
+
+    private static JsonNode partition(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 3) throw new RuntimeException("partition requires 3 arguments");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) {
+            ObjectNode result = JsonUtil.createObject();
+            result.set("true", JsonUtil.createArray());
+            result.set("false", JsonUtil.createArray());
+            return result;
+        }
+        
+        String itemName = argExprs.get(1).evaluate(context).asText();
+        Expression predicateExpr = argExprs.get(2);
+        
+        ArrayNode truePartition = JsonUtil.createArray();
+        ArrayNode falsePartition = JsonUtil.createArray();
+        
+        for (JsonNode item : arrayArg) {
+            Context itemContext = new Context(context);
+            itemContext.define(itemName, item);
+            JsonNode predicate = predicateExpr.evaluate(itemContext);
+            if (isTruthy(predicate)) {
+                truePartition.add(item);
+            } else {
+                falsePartition.add(item);
+            }
+        }
+        
+        ObjectNode result = JsonUtil.createObject();
+        result.set("true", truePartition);
+        result.set("false", falsePartition);
+        return result;
+    }
+
+    private static JsonNode sum(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 1) throw new RuntimeException("sum requires 1 argument");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray()) return IntNode.valueOf(0);
+        
+        double sum = 0;
+        for (JsonNode item : arrayArg) {
+            if (item.isNumber()) {
+                sum += item.asDouble();
+            }
+        }
+        
+        return DoubleNode.valueOf(sum);
+    }
+
+    private static JsonNode avg(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 1) throw new RuntimeException("avg requires 1 argument");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray() || arrayArg.size() == 0) return IntNode.valueOf(0);
+        
+        double sum = 0;
+        int count = 0;
+        for (JsonNode item : arrayArg) {
+            if (item.isNumber()) {
+                sum += item.asDouble();
+                count++;
+            }
+        }
+        
+        return count > 0 ? DoubleNode.valueOf(sum / count) : IntNode.valueOf(0);
+    }
+
+    private static JsonNode min(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 1) throw new RuntimeException("min requires 1 argument");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray() || arrayArg.size() == 0) return NullNode.getInstance();
+        
+        JsonNode minVal = null;
+        for (JsonNode item : arrayArg) {
+            if (minVal == null || compareNodes(item, minVal) < 0) {
+                minVal = item;
+            }
+        }
+        
+        return minVal != null ? minVal : NullNode.getInstance();
+    }
+
+    private static JsonNode max(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 1) throw new RuntimeException("max requires 1 argument");
+        
+        JsonNode arrayArg = argExprs.get(0).evaluate(context);
+        if (!arrayArg.isArray() || arrayArg.size() == 0) return NullNode.getInstance();
+        
+        JsonNode maxVal = null;
+        for (JsonNode item : arrayArg) {
+            if (maxVal == null || compareNodes(item, maxVal) > 0) {
+                maxVal = item;
+            }
+        }
+        
+        return maxVal != null ? maxVal : NullNode.getInstance();
+    }
+
+    private static JsonNode reverse(JsonNode[] args) {
+        if (args.length == 0) return JsonUtil.createArray();
+        JsonNode array = args[0];
+        if (!array.isArray()) return array;
+        
+        ArrayNode result = JsonUtil.createArray();
+        java.util.List<JsonNode> list = new java.util.ArrayList<>();
+        for (JsonNode item : array) {
+            list.add(item);
+        }
+        java.util.Collections.reverse(list);
+        for (JsonNode item : list) {
+            result.add(item);
+        }
+        
+        return result;
+    }
+
+    private static JsonNode concat(JsonNode[] args) {
+        ArrayNode result = JsonUtil.createArray();
+        for (JsonNode arg : args) {
+            if (arg.isArray()) {
+                for (JsonNode item : arg) {
+                    result.add(item);
+                }
+            } else {
+                result.add(arg);
+            }
+        }
+        return result;
+    }
+
+    private static JsonNode slice(JsonNode[] args) {
+        if (args.length < 2) return JsonUtil.createArray();
+        JsonNode array = args[0];
+        if (!array.isArray()) return array;
+        
+        int start = args[1].asInt();
+        int end = args.length > 2 ? args[2].asInt() : array.size();
+        
+        ArrayNode result = JsonUtil.createArray();
+        int index = 0;
+        for (JsonNode item : array) {
+            if (index >= start && index < end) {
+                result.add(item);
+            }
+            index++;
+        }
+        
+        return result;
+    }
+
+    private static JsonNode keys(JsonNode[] args) {
+        if (args.length == 0) return JsonUtil.createArray();
+        JsonNode obj = args[0];
+        if (!obj.isObject()) return JsonUtil.createArray();
+        
+        ArrayNode result = JsonUtil.createArray();
+        Iterator<String> fieldNames = obj.fieldNames();
+        while (fieldNames.hasNext()) {
+            result.add(TextNode.valueOf(fieldNames.next()));
+        }
+        
+        return result;
+    }
+
+    private static JsonNode values(JsonNode[] args) {
+        if (args.length == 0) return JsonUtil.createArray();
+        JsonNode obj = args[0];
+        if (!obj.isObject()) return JsonUtil.createArray();
+        
+        ArrayNode result = JsonUtil.createArray();
+        Iterator<JsonNode> elements = obj.elements();
+        while (elements.hasNext()) {
+            result.add(elements.next());
+        }
+        
+        return result;
+    }
+
+    private static JsonNode entries(JsonNode[] args) {
+        if (args.length == 0) return JsonUtil.createArray();
+        JsonNode obj = args[0];
+        if (!obj.isObject()) return JsonUtil.createArray();
+        
+        ArrayNode result = JsonUtil.createArray();
+        Iterator<String> fieldNames = obj.fieldNames();
+        while (fieldNames.hasNext()) {
+            String key = fieldNames.next();
+            ArrayNode entry = JsonUtil.createArray();
+            entry.add(TextNode.valueOf(key));
+            entry.add(obj.get(key));
+            result.add(entry);
+        }
+        
+        return result;
+    }
+
+    private static JsonNode runMorph(java.util.List<Expression> argExprs, Context context) {
+        if (argExprs.size() < 2) throw new RuntimeException("runMorph requires 2 arguments: morphFile and input");
+        
+        String morphFile = argExprs.get(0).evaluate(context).asText();
+        JsonNode input = argExprs.get(1).evaluate(context);
+        
+        try {
+            com.morphium.runtime.ModuleResolver resolver = new com.morphium.runtime.ModuleResolver();
+            String source = resolver.resolve(morphFile);
+            
+            com.morphium.parser.Lexer lexer = new com.morphium.parser.Lexer(source, morphFile);
+            com.morphium.parser.Parser parser = new com.morphium.parser.Parser(lexer);
+            Expression morphExpr = parser.parse();
+            
+            Context morphContext = new Context(context);
+            morphContext.define("$", input);
+            
+            return morphExpr.evaluate(morphContext);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to run morph file " + morphFile + ": " + e.getMessage(), e);
+        }
     }
 }
