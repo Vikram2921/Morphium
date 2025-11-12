@@ -1,0 +1,8 @@
+// Example 5: String operations and formatting
+{
+  upperName: upper(input.name),
+  lowerName: lower(input.name),
+  emailParts: split(input.email, "@"),
+  tags: join(input.tags, ", "),
+  trimmedNote: trim(input.note)
+}

@@ -1,0 +1,5 @@
+// Example 1: Flatten and rename fields
+{
+  fullName: input.person.first + " " + input.person.last,
+  years: input.age
+}

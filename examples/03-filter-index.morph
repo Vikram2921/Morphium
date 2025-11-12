@@ -1,0 +1,4 @@
+// Example 3: Filter and index by ID
+let activeUsers = filter(input.users, "u", u.active)
+let byId = indexBy(activeUsers, "id")
+byId

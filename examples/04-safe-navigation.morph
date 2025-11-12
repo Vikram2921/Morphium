@@ -1,0 +1,6 @@
+// Example 4: Safe navigation and conditionals
+{
+  customerName: input.order?.customer?.name ?? "Unknown",
+  hasItems: len(input.order?.items) > 0 ? true : false,
+  itemCount: len(input.order?.items)
+}
