@@ -1,0 +1,12 @@
+// Example: Import and use module functions
+
+import "math-utils.morph" as math
+
+{
+  numbers: map(input.numbers, "n", {
+    value: n,
+    squared: math.square(n),
+    cubed: math.cube(n),
+    sum: math.add(n, 10)
+  })
+}

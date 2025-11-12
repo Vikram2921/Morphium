@@ -1,14 +1,16 @@
 # Morphium DSL
 
-A JavaScript-like JSON transformation DSL for Java developers.
+A JavaScript-like JSON transformation DSL for Java developers with **user-defined functions**, **modules**, and **global/local variables**.
 
 ## Design Goals
 
 - **Familiar Syntax**: Looks and feels like JavaScript expressions/objects
 - **Functional/Immutable**: Expressions return new JSON values by default
-- **Minimal Keywords**: `let`, `if`, `for`, `import`, `export`
+- **Minimal Keywords**: `let`, `function`, `global`, `import`, `export`
 - **Rich Built-ins**: Common operations (map/filter/merge/format/date/string)
 - **Extensible**: Easy registration of Java functions under namespaces
+- **User Functions**: Define your own reusable functions
+- **Module System**: Import and share code across transforms
 
 ## Quick Start
 
@@ -18,19 +20,28 @@ import com.google.gson.JsonObject;
 
 MorphiumEngine engine = new MorphiumEngine();
 JsonObject input = ...; // your input JSON
-JsonObject output = engine.transform("path/to/transform.morph", input);
+JsonElement output = engine.transform("path/to/transform.morph", input);
 ```
 
 ## Transform Example
 
 ```javascript
-// flatten-rename.morph
+// Define reusable functions
+function calculateTax(amount, rate) {
+  return amount * rate
+}
+
+function formatPrice(value) {
+  return "$" + toString(value)
+}
+
+// Use functions in transformations
 {
-  fullName: input.person.first + " " + input.person.last,
-  years: input.age,
   items: map(input.items, "it", {
     id: it.id,
-    total: it.qty * it.price
+    price: it.price,
+    tax: calculateTax(it.price, 0.1),
+    total: formatPrice(it.price + calculateTax(it.price, 0.1))
   })
 }
 ```
@@ -100,9 +111,40 @@ import "utils.morph" as utils
 }
 ```
 
-## Examples
+## Documentation
 
-See the `examples/` directory for complete transform examples.
+- **[GETTING_STARTED.md](GETTING_STARTED.md)** - Complete user guide
+- **[USER_FUNCTIONS_GUIDE.md](USER_FUNCTIONS_GUIDE.md)** - Functions, globals & modules
+- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Quick reference card
+- **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Technical implementation details
+
+## New Features
+
+### User-Defined Functions
+Create reusable functions with parameters and local variables:
+```javascript
+function formatUserName(first, last) {
+  let capitalized = upper(first) + " " + upper(last)
+  return trim(capitalized)
+}
+```
+
+### Global & Local Variables
+- **Global**: Shared across entire transform and all functions
+- **Local**: Scoped to function or block
+
+### Module System
+Split transforms into reusable modules:
+```javascript
+// validators.morph
+export isEmail = function(s) { ... }
+
+// main.morph
+import "validators.morph" as v
+filter(input.users, "u", v.isEmail(u.email))
+```
+
+See **[USER_FUNCTIONS_GUIDE.md](USER_FUNCTIONS_GUIDE.md)** for complete examples.
 
 ## License
 

@@ -21,10 +21,30 @@ public class Parser {
         BlockExpr block = new BlockExpr();
         
         while (!isAtEnd()) {
-            if (match(Token.Type.LET)) {
+            if (match(Token.Type.IMPORT)) {
+                Expression importExpr = parseImportStatement();
+                if (importExpr != null) {
+                    block.addExpression(importExpr);
+                }
+            } else if (match(Token.Type.EXPORT)) {
+                Expression exportExpr = parseExportStatement();
+                if (exportExpr != null) {
+                    block.addExpression(exportExpr);
+                }
+            } else if (match(Token.Type.FUNCTION)) {
+                Expression funcExpr = parseFunctionDefinition();
+                if (funcExpr != null) {
+                    block.addExpression(funcExpr);
+                }
+            } else if (match(Token.Type.LET)) {
                 Expression letExpr = parseLetDeclaration(block);
                 if (letExpr != null) {
                     block.addExpression(letExpr);
+                }
+            } else if (match(Token.Type.GLOBAL)) {
+                Expression globalExpr = parseGlobalDeclaration();
+                if (globalExpr != null) {
+                    block.addExpression(globalExpr);
                 }
             } else {
                 block.addExpression(parseExpression());
@@ -52,6 +72,99 @@ public class Parser {
         
         // Store let binding for later expressions in the block
         return new LetStatement(name.getLexeme(), value, new LiteralExpr(null));
+    }
+
+    private Expression parseGlobalDeclaration() {
+        Token name = consume(Token.Type.IDENTIFIER, "Expected variable name");
+        consume(Token.Type.EQ, "Expected '=' after variable name");
+        Expression value = parseExpression();
+        matchOptional(Token.Type.SEMICOLON);
+        
+        return new GlobalVarStatement(name.getLexeme(), value);
+    }
+
+    private Expression parseFunctionDefinition() {
+        Token name = consume(Token.Type.IDENTIFIER, "Expected function name");
+        consume(Token.Type.LPAREN, "Expected '(' after function name");
+        
+        List<String> parameters = new java.util.ArrayList<>();
+        if (!check(Token.Type.RPAREN)) {
+            do {
+                Token param = consume(Token.Type.IDENTIFIER, "Expected parameter name");
+                parameters.add(param.getLexeme());
+            } while (match(Token.Type.COMMA));
+        }
+        
+        consume(Token.Type.RPAREN, "Expected ')' after parameters");
+        
+        Expression body;
+        if (match(Token.Type.LBRACE)) {
+            body = parseFunctionBody();
+            consume(Token.Type.RBRACE, "Expected '}' after function body");
+        } else {
+            consume(Token.Type.ARROW, "Expected '=>' or '{' after parameters");
+            body = parseExpression();
+        }
+        
+        matchOptional(Token.Type.SEMICOLON);
+        
+        return new FunctionDefExpr(name.getLexeme(), parameters, body);
+    }
+
+    private Expression parseFunctionBody() {
+        BlockExpr block = new BlockExpr();
+        
+        while (!check(Token.Type.RBRACE) && !isAtEnd()) {
+            if (match(Token.Type.RETURN)) {
+                Expression returnExpr = parseExpression();
+                matchOptional(Token.Type.SEMICOLON);
+                block.addExpression(returnExpr);
+                break;
+            } else if (match(Token.Type.LET)) {
+                Expression letExpr = parseLetDeclaration(block);
+                if (letExpr != null) {
+                    block.addExpression(letExpr);
+                }
+            } else {
+                block.addExpression(parseExpression());
+                matchOptional(Token.Type.SEMICOLON);
+            }
+        }
+        
+        List<Expression> exprs = block.getExpressions();
+        if (exprs.isEmpty()) {
+            return new LiteralExpr(null);
+        }
+        if (exprs.size() == 1) {
+            return exprs.get(0);
+        }
+        return block;
+    }
+
+    private Expression parseImportStatement() {
+        Token pathToken = consume(Token.Type.STRING, "Expected module path");
+        String modulePath = (String) pathToken.getLiteral();
+        
+        String alias = null;
+        List<String> specificImports = null;
+        
+        if (match(Token.Type.AS)) {
+            Token aliasToken = consume(Token.Type.IDENTIFIER, "Expected alias name");
+            alias = aliasToken.getLexeme();
+        }
+        
+        matchOptional(Token.Type.SEMICOLON);
+        
+        return new ImportStatement(modulePath, alias, specificImports);
+    }
+
+    private Expression parseExportStatement() {
+        Token name = consume(Token.Type.IDENTIFIER, "Expected export name");
+        consume(Token.Type.EQ, "Expected '=' after export name");
+        Expression value = parseExpression();
+        matchOptional(Token.Type.SEMICOLON);
+        
+        return new ExportStatement(name.getLexeme(), value);
     }
 
     private Expression parseExpression() {

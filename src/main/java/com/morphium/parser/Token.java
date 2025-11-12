@@ -7,6 +7,7 @@ public class Token {
         
         // Identifiers and keywords
         IDENTIFIER, LET, IF, FOR, OF, IMPORT, EXPORT, AS, FROM,
+        FUNCTION, RETURN, GLOBAL,
         
         // Operators
         PLUS, MINUS, STAR, SLASH, PERCENT,

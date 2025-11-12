@@ -1,0 +1,47 @@
+// Example: Complex scenario with functions, variables, and imports
+
+global TAX_RATE = 0.08
+global DISCOUNT_THRESHOLD = 100
+
+function applyDiscount(price) {
+  if (price > DISCOUNT_THRESHOLD) {
+    return price * 0.9
+  } else {
+    return price
+  }
+}
+
+function calculateTotal(price, quantity) {
+  let subtotal = price * quantity
+  let discounted = applyDiscount(subtotal)
+  let tax = discounted * TAX_RATE
+  return discounted + tax
+}
+
+function formatCurrency(amount) {
+  return "$" + toNumber(amount).toFixed(2)
+}
+
+{
+  orderSummary: {
+    items: map(input.items, "item", {
+      name: item.name,
+      quantity: item.qty,
+      unitPrice: formatCurrency(item.price),
+      total: formatCurrency(calculateTotal(item.price, item.qty))
+    }),
+    totals: {
+      subtotal: formatCurrency(
+        reduce(input.items, "sum", "item", 0, sum + (item.price * item.qty))
+      ),
+      tax: formatCurrency(
+        reduce(input.items, "sum", "item", 0, 
+          sum + (applyDiscount(item.price * item.qty) * TAX_RATE))
+      ),
+      grandTotal: formatCurrency(
+        reduce(input.items, "sum", "item", 0, 
+          sum + calculateTotal(item.price, item.qty))
+      )
+    }
+  }
+}

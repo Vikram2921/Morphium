@@ -20,10 +20,27 @@ public class BlockExpr implements Expression {
     @Override
     public JsonElement evaluate(Context context) {
         JsonElement result = null;
+        Context blockContext = new Context(context);
+        
         for (Expression expr : expressions) {
-            result = expr.evaluate(context);
+            result = expr.evaluate(blockContext);
+            
+            // Function definitions, global declarations, and let statements modify context
+            // but don't produce a final result
+            if (expr instanceof FunctionDefExpr || 
+                expr instanceof GlobalVarStatement ||
+                expr instanceof LetStatement ||
+                expr instanceof ImportStatement ||
+                expr instanceof ExportStatement) {
+                // These update context but continue to next expression
+                // Keep the previous result
+                continue;
+            }
         }
-        return result;
+        
+        // If all expressions were declarations, return the last one
+        // Otherwise return the last non-declaration result
+        return result != null ? result : com.google.gson.JsonNull.INSTANCE;
     }
 
     public List<Expression> getExpressions() {

@@ -19,6 +19,9 @@ public class Lexer {
         KEYWORDS.put("export", Token.Type.EXPORT);
         KEYWORDS.put("as", Token.Type.AS);
         KEYWORDS.put("from", Token.Type.FROM);
+        KEYWORDS.put("function", Token.Type.FUNCTION);
+        KEYWORDS.put("return", Token.Type.RETURN);
+        KEYWORDS.put("global", Token.Type.GLOBAL);
         KEYWORDS.put("true", Token.Type.TRUE);
         KEYWORDS.put("false", Token.Type.FALSE);
         KEYWORDS.put("null", Token.Type.NULL);

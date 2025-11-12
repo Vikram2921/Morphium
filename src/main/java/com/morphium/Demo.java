@@ -13,7 +13,7 @@ public class Demo {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         MorphiumEngine engine = new MorphiumEngine();
 
-        System.out.println("=== Morphium DSL Demo ===\n");
+        System.out.println("=== Morphium DSL Demo - Enhanced Features ===\n");
 
         // Demo 1: Simple transformation
         demo1(engine, gson);
@@ -26,6 +26,15 @@ public class Demo {
 
         // Demo 4: String operations
         demo4(engine, gson);
+
+        // Demo 5: User-defined functions
+        demo5(engine, gson);
+
+        // Demo 6: Global variables
+        demo6(engine, gson);
+
+        // Demo 7: Functions calling functions
+        demo7(engine, gson);
     }
 
     private static void demo1(MorphiumEngine engine, Gson gson) {
@@ -114,6 +123,99 @@ public class Demo {
             "}";
         
         JsonObject input = gson.fromJson(inputJson, JsonObject.class);
+        
+        System.out.println("Input:");
+        System.out.println(gson.toJson(input));
+        
+        JsonElement result = engine.transformFromString(transform, input);
+        
+        System.out.println("\nOutput:");
+        System.out.println(gson.toJson(result));
+        System.out.println();
+    }
+
+    private static void demo5(MorphiumEngine engine, Gson gson) {
+        System.out.println("--- Demo 5: User-Defined Functions ---");
+        
+        String transform = 
+            "function calculateTax(amount, rate) { return amount * rate }\n" +
+            "function formatPrice(value) { return \"$\" + toString(toNumber(value)) }\n" +
+            "{\n" +
+            "  items: map(input.items, \"item\", {\n" +
+            "    id: item.id,\n" +
+            "    price: item.price,\n" +
+            "    tax: calculateTax(item.price, 0.1),\n" +
+            "    total: item.price + calculateTax(item.price, 0.1),\n" +
+            "    formatted: formatPrice(item.price + calculateTax(item.price, 0.1))\n" +
+            "  })\n" +
+            "}";
+        
+        String inputJson = "{ \"items\": [" +
+            "{ \"id\": \"A\", \"price\": 100 }," +
+            "{ \"id\": \"B\", \"price\": 200 }" +
+            "] }";
+        
+        JsonObject input = gson.fromJson(inputJson, JsonObject.class);
+        
+        System.out.println("Input:");
+        System.out.println(gson.toJson(input));
+        
+        JsonElement result = engine.transformFromString(transform, input);
+        
+        System.out.println("\nOutput:");
+        System.out.println(gson.toJson(result));
+        System.out.println();
+    }
+
+    private static void demo6(MorphiumEngine engine, Gson gson) {
+        System.out.println("--- Demo 6: Global Variables ---");
+        
+        String transform = 
+            "global PI = 3.14159\n" +
+            "function calculateCircleArea(radius) {\n" +
+            "  let squared = radius * radius\n" +
+            "  return PI * squared\n" +
+            "}\n" +
+            "{\n" +
+            "  circles: map(input.circles, \"c\", {\n" +
+            "    radius: c.radius,\n" +
+            "    area: calculateCircleArea(c.radius)\n" +
+            "  })\n" +
+            "}";
+        
+        String inputJson = "{ \"circles\": [" +
+            "{ \"radius\": 5 }," +
+            "{ \"radius\": 10 }" +
+            "] }";
+        
+        JsonObject input = gson.fromJson(inputJson, JsonObject.class);
+        
+        System.out.println("Input:");
+        System.out.println(gson.toJson(input));
+        
+        JsonElement result = engine.transformFromString(transform, input);
+        
+        System.out.println("\nOutput:");
+        System.out.println(gson.toJson(result));
+        System.out.println();
+    }
+
+    private static void demo7(MorphiumEngine engine, Gson gson) {
+        System.out.println("--- Demo 7: Functions Calling Functions ---");
+        
+        String transform = 
+            "function square(x) { return x * x }\n" +
+            "function cube(x) { return x * square(x) }\n" +
+            "function sumOfSquares(a, b) { return square(a) + square(b) }\n" +
+            "{\n" +
+            "  value: input.value,\n" +
+            "  squared: square(input.value),\n" +
+            "  cubed: cube(input.value),\n" +
+            "  sumOfSquares: sumOfSquares(3, 4)\n" +
+            "}";
+        
+        JsonObject input = new JsonObject();
+        input.addProperty("value", 5);
         
         System.out.println("Input:");
         System.out.println(gson.toJson(input));

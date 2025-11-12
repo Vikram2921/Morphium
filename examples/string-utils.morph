@@ -1,0 +1,16 @@
+// Module: string-utils.morph
+// Reusable string functions
+
+export capitalize = function(str) {
+  let first = upper(str.substring(0, 1))
+  let rest = str.substring(1)
+  return first + rest
+}
+
+export formatName = function(first, last) {
+  return capitalize(first) + " " + capitalize(last)
+}
+
+export slugify = function(text) {
+  return lower(replace(trim(text), " ", "-"))
+}

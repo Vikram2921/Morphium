@@ -1,0 +1,18 @@
+// Module: math-utils.morph
+// Reusable math functions
+
+export add = function(a, b) {
+  return a + b
+}
+
+export multiply = function(a, b) {
+  return a * b
+}
+
+export square = function(x) {
+  return multiply(x, x)
+}
+
+export cube = function(x) {
+  return multiply(multiply(x, x), x)
+}

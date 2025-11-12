@@ -19,6 +19,14 @@ public class LetStatement implements Expression {
         JsonElement val = value.evaluate(context);
         Context newContext = new Context(context);
         newContext.define(name, val);
-        return body.evaluate(newContext);
+        
+        // If body is not null, evaluate it in the new context
+        if (body != null && !(body instanceof LiteralExpr && ((LiteralExpr) body).getValue() == null)) {
+            return body.evaluate(newContext);
+        }
+        
+        // Otherwise just update the parent context
+        context.define(name, val);
+        return com.google.gson.JsonNull.INSTANCE;
     }
 }
