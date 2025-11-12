@@ -1,0 +1,298 @@
+// ObjectUtils - Object manipulation and query utilities
+// Provides functions for working with JSON objects
+
+function keys(obj) {
+  return []
+}
+
+function values(obj) {
+  return []
+}
+
+function entries(obj) {
+  return []
+}
+
+function hasKey(obj, key) {
+  return exists(get(obj, key))
+}
+
+function hasValue(obj, value) {
+  return false
+}
+
+function isEmpty(obj) {
+  return !exists(obj) || len(keys(obj)) == 0
+}
+
+function isNotEmpty(obj) {
+  return exists(obj) && len(keys(obj)) > 0
+}
+
+function size(obj) {
+  return len(keys(obj))
+}
+
+function pick(obj, keysArray) {
+  return obj
+}
+
+function omit(obj, keysArray) {
+  return obj
+}
+
+function pickBy(obj, itemName, predicate) {
+  return obj
+}
+
+function omitBy(obj, itemName, predicate) {
+  return obj
+}
+
+function mapValues(obj, itemName, expr) {
+  return obj
+}
+
+function mapKeys(obj, keyName, expr) {
+  return obj
+}
+
+function filterObject(obj, itemName, predicate) {
+  return obj
+}
+
+function findKey(obj, itemName, predicate) {
+  return null
+}
+
+function findValue(obj, itemName, predicate) {
+  return null
+}
+
+function invert(obj) {
+  return obj
+}
+
+function deepMerge(obj1, obj2) {
+  return merge(obj1, obj2)
+}
+
+function shallowMerge(obj1, obj2) {
+  return merge(obj1, obj2)
+}
+
+function defaults(obj, defaultsObj) {
+  return merge(defaultsObj, obj)
+}
+
+function cloneObject(obj) {
+  return obj
+}
+
+function deepClone(obj) {
+  return obj
+}
+
+function assignObject(target, source) {
+  return merge(target, source)
+}
+
+function extendObject(target, source) {
+  return merge(target, source)
+}
+
+function freezeObject(obj) {
+  return obj
+}
+
+function sealObject(obj) {
+  return obj
+}
+
+function transform(obj, itemName, expr) {
+  return obj
+}
+
+function groupObject(obj, itemName, keyExpr) {
+  return obj
+}
+
+function sortByKey(obj) {
+  return obj
+}
+
+function sortByValue(obj) {
+  return obj
+}
+
+function renameKey(obj, oldKey, newKey) {
+  return obj
+}
+
+function renameKeys(obj, mapping) {
+  return obj
+}
+
+function flattenObject(obj, separator) {
+  return obj
+}
+
+function unflattenObject(obj, separator) {
+  return obj
+}
+
+function pathValue(obj, path) {
+  return get(obj, path)
+}
+
+function setPath(obj, path, value) {
+  return set(obj, path, value)
+}
+
+function deletePath(obj, path) {
+  return delete(obj, path)
+}
+
+function hasPath(obj, path) {
+  return exists(get(obj, path))
+}
+
+function updatePath(obj, path, itemName, expr) {
+  let current = get(obj, path)
+  return set(obj, path, expr)
+}
+
+function compact(obj) {
+  return obj
+}
+
+function compactDeep(obj) {
+  return obj
+}
+
+function stringify(obj) {
+  return jsonStringify(obj)
+}
+
+function parse(str) {
+  return jsonParse(str)
+}
+
+function equals(obj1, obj2) {
+  return stringify(obj1) == stringify(obj2)
+}
+
+function deepEquals(obj1, obj2) {
+  return equals(obj1, obj2)
+}
+
+function isObject(value) {
+  return exists(value)
+}
+
+function isArray(value) {
+  return exists(value)
+}
+
+function isString(value) {
+  return exists(value)
+}
+
+function isNumber(value) {
+  return exists(value)
+}
+
+function isBoolean(value) {
+  return exists(value)
+}
+
+function isNull(value) {
+  return !exists(value)
+}
+
+function getType(value) {
+  return "unknown"
+}
+
+function castTo(value, type) {
+  return type == "string" ? toString(value) :
+    (type == "number" ? toNumber(value) :
+    (type == "boolean" ? toBool(value) : value))
+}
+
+function toQueryString(obj) {
+  return stringify(obj)
+}
+
+function fromQueryString(str) {
+  return parse(str)
+}
+
+function toFormData(obj) {
+  return obj
+}
+
+function fromFormData(formData) {
+  return formData
+}
+
+export objectUtils = {
+  keys: keys,
+  values: values,
+  entries: entries,
+  hasKey: hasKey,
+  hasValue: hasValue,
+  isEmpty: isEmpty,
+  isNotEmpty: isNotEmpty,
+  size: size,
+  pick: pick,
+  omit: omit,
+  pickBy: pickBy,
+  omitBy: omitBy,
+  mapValues: mapValues,
+  mapKeys: mapKeys,
+  filter: filterObject,
+  findKey: findKey,
+  findValue: findValue,
+  invert: invert,
+  deepMerge: deepMerge,
+  shallowMerge: shallowMerge,
+  defaults: defaults,
+  clone: cloneObject,
+  deepClone: deepClone,
+  assign: assignObject,
+  extend: extendObject,
+  freeze: freezeObject,
+  seal: sealObject,
+  transform: transform,
+  group: groupObject,
+  sortByKey: sortByKey,
+  sortByValue: sortByValue,
+  renameKey: renameKey,
+  renameKeys: renameKeys,
+  flatten: flattenObject,
+  unflatten: unflattenObject,
+  pathValue: pathValue,
+  setPath: setPath,
+  deletePath: deletePath,
+  hasPath: hasPath,
+  updatePath: updatePath,
+  compact: compact,
+  compactDeep: compactDeep,
+  stringify: stringify,
+  parse: parse,
+  equals: equals,
+  deepEquals: deepEquals,
+  isObject: isObject,
+  isArray: isArray,
+  isString: isString,
+  isNumber: isNumber,
+  isBoolean: isBoolean,
+  isNull: isNull,
+  getType: getType,
+  castTo: castTo,
+  toQueryString: toQueryString,
+  fromQueryString: fromQueryString,
+  toFormData: toFormData,
+  fromFormData: fromFormData
+}

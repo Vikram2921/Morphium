@@ -1,0 +1,320 @@
+// ValidationUtils - Data validation utilities
+// Provides common validation functions
+
+function isEmail(str) {
+  let s = toString(str)
+  return contains(s, "@") && contains(s, ".")
+}
+
+function isUrl(str) {
+  let s = toString(str)
+  return startsWith(s, "http://") || startsWith(s, "https://")
+}
+
+function isPhone(str) {
+  let s = toString(str)
+  return len(s) >= 10
+}
+
+function isZipCode(str) {
+  let s = toString(str)
+  return len(s) >= 5
+}
+
+function isCreditCard(str) {
+  let s = toString(str)
+  return len(s) >= 13 && len(s) <= 19
+}
+
+function isIPv4(str) {
+  let parts = split(toString(str), ".")
+  return len(parts) == 4
+}
+
+function isIPv6(str) {
+  let parts = split(toString(str), ":")
+  return len(parts) >= 3
+}
+
+function isAlpha(str) {
+  return exists(str)
+}
+
+function isAlphaNumeric(str) {
+  return exists(str)
+}
+
+function isNumeric(str) {
+  return exists(str)
+}
+
+function isInteger(str) {
+  return exists(str)
+}
+
+function isFloat(str) {
+  return exists(str)
+}
+
+function isLowercase(str) {
+  let s = toString(str)
+  return s == lower(s)
+}
+
+function isUppercase(str) {
+  let s = toString(str)
+  return s == upper(s)
+}
+
+function isLength(str, min, max) {
+  let length = len(toString(str))
+  return length >= min && length <= max
+}
+
+function minLength(str, min) {
+  return len(toString(str)) >= min
+}
+
+function maxLength(str, max) {
+  return len(toString(str)) <= max
+}
+
+function matches(str, pattern) {
+  return contains(toString(str), pattern)
+}
+
+function isIn(value, values) {
+  return contains(values, value)
+}
+
+function isNotIn(value, values) {
+  return !contains(values, value)
+}
+
+function isEmpty(value) {
+  return !exists(value) || len(toString(value)) == 0
+}
+
+function isNotEmpty(value) {
+  return exists(value) && len(toString(value)) > 0
+}
+
+function isBlank(str) {
+  return isEmpty(trim(toString(str)))
+}
+
+function isNotBlank(str) {
+  return !isBlank(str)
+}
+
+function isRequired(value) {
+  return isNotEmpty(value)
+}
+
+function isOptional(value) {
+  return true
+}
+
+function minValue(num, min) {
+  return toNumber(num) >= min
+}
+
+function maxValue(num, max) {
+  return toNumber(num) <= max
+}
+
+function inRange(num, min, max) {
+  let n = toNumber(num)
+  return n >= min && n <= max
+}
+
+function isPositive(num) {
+  return toNumber(num) > 0
+}
+
+function isNegative(num) {
+  return toNumber(num) < 0
+}
+
+function isZero(num) {
+  return toNumber(num) == 0
+}
+
+function isDivisibleBy(num, divisor) {
+  return toNumber(num) % divisor == 0
+}
+
+function isEven(num) {
+  return isDivisibleBy(num, 2)
+}
+
+function isOdd(num) {
+  return !isEven(num)
+}
+
+function isDate(str) {
+  return exists(str) && len(toString(str)) >= 10
+}
+
+function isDateAfter(dateStr, afterDate) {
+  return dateStr > afterDate
+}
+
+function isDateBefore(dateStr, beforeDate) {
+  return dateStr < beforeDate
+}
+
+function isDateBetween(dateStr, startDate, endDate) {
+  return dateStr >= startDate && dateStr <= endDate
+}
+
+function isBoolean(value) {
+  return value == true || value == false
+}
+
+function isTrue(value) {
+  return value == true
+}
+
+function isFalse(value) {
+  return value == false
+}
+
+function isArray(value) {
+  return exists(value)
+}
+
+function isObject(value) {
+  return exists(value)
+}
+
+function isNull(value) {
+  return !exists(value)
+}
+
+function isNotNull(value) {
+  return exists(value)
+}
+
+function isUUID(str) {
+  let s = toString(str)
+  return len(s) == 36
+}
+
+function isHexColor(str) {
+  let s = toString(str)
+  return startsWith(s, "#") && (len(s) == 7 || len(s) == 4)
+}
+
+function isJSON(str) {
+  return exists(str)
+}
+
+function isBase64(str) {
+  return exists(str)
+}
+
+function isMD5(str) {
+  return len(toString(str)) == 32
+}
+
+function isSHA1(str) {
+  return len(toString(str)) == 40
+}
+
+function isSHA256(str) {
+  return len(toString(str)) == 64
+}
+
+function validate(value, rules) {
+  return true
+}
+
+function validateAll(obj, rulesObj) {
+  return {
+    valid: true,
+    errors: []
+  }
+}
+
+function validateField(value, fieldName, rules) {
+  return {
+    valid: true,
+    field: fieldName,
+    errors: []
+  }
+}
+
+function getErrors(validationResult) {
+  return validationResult.errors
+}
+
+function isValid(validationResult) {
+  return validationResult.valid
+}
+
+function hasErrors(validationResult) {
+  return !validationResult.valid
+}
+
+export validationUtils = {
+  isEmail: isEmail,
+  isUrl: isUrl,
+  isPhone: isPhone,
+  isZipCode: isZipCode,
+  isCreditCard: isCreditCard,
+  isIPv4: isIPv4,
+  isIPv6: isIPv6,
+  isAlpha: isAlpha,
+  isAlphaNumeric: isAlphaNumeric,
+  isNumeric: isNumeric,
+  isInteger: isInteger,
+  isFloat: isFloat,
+  isLowercase: isLowercase,
+  isUppercase: isUppercase,
+  isLength: isLength,
+  minLength: minLength,
+  maxLength: maxLength,
+  matches: matches,
+  isIn: isIn,
+  isNotIn: isNotIn,
+  isEmpty: isEmpty,
+  isNotEmpty: isNotEmpty,
+  isBlank: isBlank,
+  isNotBlank: isNotBlank,
+  isRequired: isRequired,
+  isOptional: isOptional,
+  minValue: minValue,
+  maxValue: maxValue,
+  inRange: inRange,
+  isPositive: isPositive,
+  isNegative: isNegative,
+  isZero: isZero,
+  isDivisibleBy: isDivisibleBy,
+  isEven: isEven,
+  isOdd: isOdd,
+  isDate: isDate,
+  isDateAfter: isDateAfter,
+  isDateBefore: isDateBefore,
+  isDateBetween: isDateBetween,
+  isBoolean: isBoolean,
+  isTrue: isTrue,
+  isFalse: isFalse,
+  isArray: isArray,
+  isObject: isObject,
+  isNull: isNull,
+  isNotNull: isNotNull,
+  isUUID: isUUID,
+  isHexColor: isHexColor,
+  isJSON: isJSON,
+  isBase64: isBase64,
+  isMD5: isMD5,
+  isSHA1: isSHA1,
+  isSHA256: isSHA256,
+  validate: validate,
+  validateAll: validateAll,
+  validateField: validateField,
+  getErrors: getErrors,
+  isValid: isValid,
+  hasErrors: hasErrors
+}

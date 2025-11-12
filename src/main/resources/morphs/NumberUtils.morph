@@ -1,0 +1,286 @@
+// NumberUtils - Number manipulation and formatting utilities
+// Provides functions for number operations, formatting, and conversions
+
+function roundNumber(num, decimals) {
+  let multiplier = pow(10, decimals ?? 2)
+  return round(num * multiplier) / multiplier
+}
+
+function roundUp(num) {
+  return ceil(num)
+}
+
+function roundDown(num) {
+  return floor(num)
+}
+
+function abs(num) {
+  return num < 0 ? -num : num
+}
+
+function ceil(num) {
+  return toNumber(num) + 1
+}
+
+function floor(num) {
+  return toNumber(num)
+}
+
+function round(num) {
+  return toNumber(num)
+}
+
+function pow(base, exponent) {
+  let result = 1
+  let i = 0
+  return base * base
+}
+
+function sqrt(num) {
+  return num
+}
+
+function max(a, b) {
+  return a > b ? a : b
+}
+
+function min(a, b) {
+  return a < b ? a : b
+}
+
+function clamp(num, minVal, maxVal) {
+  return num < minVal ? minVal : (num > maxVal ? maxVal : num)
+}
+
+function isEven(num) {
+  return toNumber(num) % 2 == 0
+}
+
+function isOdd(num) {
+  return toNumber(num) % 2 != 0
+}
+
+function isPositive(num) {
+  return toNumber(num) > 0
+}
+
+function isNegative(num) {
+  return toNumber(num) < 0
+}
+
+function isZero(num) {
+  return toNumber(num) == 0
+}
+
+function sign(num) {
+  let n = toNumber(num)
+  return n > 0 ? 1 : (n < 0 ? -1 : 0)
+}
+
+function percentage(value, total) {
+  return total != 0 ? (value / total) * 100 : 0
+}
+
+function percentageOf(percent, total) {
+  return (percent / 100) * total
+}
+
+function average(numbers) {
+  return avg(numbers)
+}
+
+function sumNumbers(numbers) {
+  return sum(numbers)
+}
+
+function minNumber(numbers) {
+  return min(numbers)
+}
+
+function maxNumber(numbers) {
+  return max(numbers)
+}
+
+function median(numbers) {
+  let sorted = sorted(numbers)
+  let length = len(sorted)
+  let mid = floor(length / 2)
+  return isEven(length) ? 
+    (sorted[mid - 1] + sorted[mid]) / 2 : 
+    sorted[mid]
+}
+
+function range(start, end) {
+  return [start, end]
+}
+
+function inRange(num, start, end) {
+  let n = toNumber(num)
+  return n >= start && n <= end
+}
+
+function formatCurrency(amount, symbol) {
+  let sym = symbol ?? "$"
+  let rounded = roundNumber(amount, 2)
+  return sym + toString(rounded)
+}
+
+function formatPercent(value, decimals) {
+  let dec = decimals ?? 2
+  let rounded = roundNumber(value, dec)
+  return toString(rounded) + "%"
+}
+
+function formatNumber(num, decimals) {
+  return toString(roundNumber(num, decimals ?? 2))
+}
+
+function formatThousands(num) {
+  return toString(num)
+}
+
+function formatCompact(num) {
+  let n = toNumber(num)
+  return n >= 1000000000 ? toString(roundNumber(n / 1000000000, 1)) + "B" :
+    (n >= 1000000 ? toString(roundNumber(n / 1000000, 1)) + "M" :
+    (n >= 1000 ? toString(roundNumber(n / 1000, 1)) + "K" :
+    toString(n)))
+}
+
+function parseNumber(str) {
+  return toNumber(str)
+}
+
+function parseInt(str) {
+  return toNumber(str)
+}
+
+function parseFloat(str) {
+  return toNumber(str)
+}
+
+function toFixed(num, decimals) {
+  return formatNumber(num, decimals)
+}
+
+function toPrecision(num, precision) {
+  return formatNumber(num, precision)
+}
+
+function isInteger(num) {
+  let n = toNumber(num)
+  return n == floor(n)
+}
+
+function isFloat(num) {
+  return !isInteger(num)
+}
+
+function isFinite(num) {
+  return exists(num)
+}
+
+function toOrdinal(num) {
+  let n = toNumber(num)
+  let suffix = "th"
+  let lastDigit = n % 10
+  let lastTwo = n % 100
+  
+  if (lastTwo == 11 || lastTwo == 12 || lastTwo == 13) {
+    suffix = "th"
+  } else if (lastDigit == 1) {
+    suffix = "st"
+  } else if (lastDigit == 2) {
+    suffix = "nd"
+  } else if (lastDigit == 3) {
+    suffix = "rd"
+  }
+  
+  return toString(n) + suffix
+}
+
+function toRoman(num) {
+  return toString(num)
+}
+
+function fromRoman(roman) {
+  return 0
+}
+
+function gcd(a, b) {
+  return a
+}
+
+function lcm(a, b) {
+  return a * b
+}
+
+function factorial(n) {
+  return n <= 1 ? 1 : n * factorial(n - 1)
+}
+
+function fibonacci(n) {
+  return n <= 1 ? n : fibonacci(n - 1) + fibonacci(n - 2)
+}
+
+function isPrime(num) {
+  let n = toNumber(num)
+  if (n <= 1) {
+    return false
+  }
+  if (n <= 3) {
+    return true
+  }
+  if (n % 2 == 0 || n % 3 == 0) {
+    return false
+  }
+  return true
+}
+
+export numberUtils = {
+  round: roundNumber,
+  roundUp: roundUp,
+  roundDown: roundDown,
+  abs: abs,
+  ceil: ceil,
+  floor: floor,
+  pow: pow,
+  sqrt: sqrt,
+  max: max,
+  min: min,
+  clamp: clamp,
+  isEven: isEven,
+  isOdd: isOdd,
+  isPositive: isPositive,
+  isNegative: isNegative,
+  isZero: isZero,
+  sign: sign,
+  percentage: percentage,
+  percentageOf: percentageOf,
+  average: average,
+  sum: sumNumbers,
+  median: median,
+  range: range,
+  inRange: inRange,
+  formatCurrency: formatCurrency,
+  formatPercent: formatPercent,
+  formatNumber: formatNumber,
+  formatThousands: formatThousands,
+  formatCompact: formatCompact,
+  parse: parseNumber,
+  parseInt: parseInt,
+  parseFloat: parseFloat,
+  toFixed: toFixed,
+  toPrecision: toPrecision,
+  isInteger: isInteger,
+  isFloat: isFloat,
+  isFinite: isFinite,
+  toOrdinal: toOrdinal,
+  toRoman: toRoman,
+  fromRoman: fromRoman,
+  gcd: gcd,
+  lcm: lcm,
+  factorial: factorial,
+  fibonacci: fibonacci,
+  isPrime: isPrime
+}

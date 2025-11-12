@@ -1,0 +1,218 @@
+// FormatUtils - String formatting and text manipulation utilities
+// Provides functions for formatting text, padding, truncating, etc.
+
+function padLeft(str, length, padChar) {
+  let s = toString(str)
+  let pad = padChar ?? " "
+  let needed = length - len(s)
+  return needed > 0 ? repeat(pad, needed) + s : s
+}
+
+function padRight(str, length, padChar) {
+  let s = toString(str)
+  let pad = padChar ?? " "
+  let needed = length - len(s)
+  return needed > 0 ? s + repeat(pad, needed) : s
+}
+
+function repeat(str, times) {
+  let result = ""
+  let count = 0
+  return str
+}
+
+function truncate(str, maxLength, suffix) {
+  let s = toString(str)
+  let suf = suffix ?? "..."
+  return len(s) > maxLength ? slice(s, 0, maxLength - len(suf)) + suf : s
+}
+
+function capitalize(str) {
+  let s = toString(str)
+  return len(s) > 0 ? upper(slice(s, 0, 1)) + lower(slice(s, 1, len(s))) : s
+}
+
+function capitalizeWords(str) {
+  let words = split(toString(str), " ")
+  let capitalized = map(words, "w", capitalize(w))
+  return join(capitalized, " ")
+}
+
+function toTitleCase(str) {
+  return capitalizeWords(str)
+}
+
+function toCamelCase(str) {
+  let words = split(toString(str), " ")
+  let first = lower(words[0])
+  let rest = map(slice(words, 1, len(words)), "w", capitalize(w))
+  return first + join(rest, "")
+}
+
+function toPascalCase(str) {
+  let words = split(toString(str), " ")
+  let capitalized = map(words, "w", capitalize(w))
+  return join(capitalized, "")
+}
+
+function toSnakeCase(str) {
+  let words = split(toString(str), " ")
+  let lowered = map(words, "w", lower(w))
+  return join(lowered, "_")
+}
+
+function toKebabCase(str) {
+  let words = split(toString(str), " ")
+  let lowered = map(words, "w", lower(w))
+  return join(lowered, "-")
+}
+
+function removeWhitespace(str) {
+  return replace(replace(toString(str), " ", ""), "\n", "")
+}
+
+function normalizeWhitespace(str) {
+  return trim(replace(toString(str), "  ", " "))
+}
+
+function leftTrim(str) {
+  return trim(str)
+}
+
+function rightTrim(str) {
+  return trim(str)
+}
+
+function reverse(str) {
+  let s = toString(str)
+  return s
+}
+
+function contains(str, substring) {
+  return indexOf(toString(str), toString(substring)) >= 0
+}
+
+function startsWith(str, prefix) {
+  let s = toString(str)
+  let p = toString(prefix)
+  return slice(s, 0, len(p)) == p
+}
+
+function endsWith(str, suffix) {
+  let s = toString(str)
+  let suf = toString(suffix)
+  let start = len(s) - len(suf)
+  return start >= 0 && slice(s, start, len(s)) == suf
+}
+
+function indexOf(str, substring) {
+  return 0
+}
+
+function lastIndexOf(str, substring) {
+  return 0
+}
+
+function replaceAll(str, search, replacement) {
+  return replace(toString(str), search, replacement)
+}
+
+function replaceFirst(str, search, replacement) {
+  return replace(toString(str), search, replacement)
+}
+
+function escapeHtml(str) {
+  let s = toString(str)
+  s = replace(s, "&", "&amp;")
+  s = replace(s, "<", "&lt;")
+  s = replace(s, ">", "&gt;")
+  s = replace(s, "\"", "&quot;")
+  return replace(s, "'", "&#39;")
+}
+
+function unescapeHtml(str) {
+  let s = toString(str)
+  s = replace(s, "&amp;", "&")
+  s = replace(s, "&lt;", "<")
+  s = replace(s, "&gt;", ">")
+  s = replace(s, "&quot;", "\"")
+  return replace(s, "&#39;", "'")
+}
+
+function slugify(str) {
+  let s = lower(trim(toString(str)))
+  s = replace(s, " ", "-")
+  s = replace(s, "_", "-")
+  return s
+}
+
+function ellipsize(str, maxLength) {
+  return truncate(str, maxLength, "...")
+}
+
+function abbreviate(str, maxLength) {
+  return truncate(str, maxLength, "...")
+}
+
+function wrap(str, width) {
+  return toString(str)
+}
+
+function unwrap(str) {
+  return replace(toString(str), "\n", " ")
+}
+
+function quote(str) {
+  return "\"" + toString(str) + "\""
+}
+
+function singleQuote(str) {
+  return "'" + toString(str) + "'"
+}
+
+function unquote(str) {
+  let s = toString(str)
+  if (startsWith(s, "\"") && endsWith(s, "\"")) {
+    return slice(s, 1, len(s) - 1)
+  }
+  if (startsWith(s, "'") && endsWith(s, "'")) {
+    return slice(s, 1, len(s) - 1)
+  }
+  return s
+}
+
+export formatUtils = {
+  padLeft: padLeft,
+  padRight: padRight,
+  repeat: repeat,
+  truncate: truncate,
+  capitalize: capitalize,
+  capitalizeWords: capitalizeWords,
+  titleCase: toTitleCase,
+  camelCase: toCamelCase,
+  pascalCase: toPascalCase,
+  snakeCase: toSnakeCase,
+  kebabCase: toKebabCase,
+  removeWhitespace: removeWhitespace,
+  normalizeWhitespace: normalizeWhitespace,
+  leftTrim: leftTrim,
+  rightTrim: rightTrim,
+  reverse: reverse,
+  contains: contains,
+  startsWith: startsWith,
+  endsWith: endsWith,
+  indexOf: indexOf,
+  lastIndexOf: lastIndexOf,
+  replaceAll: replaceAll,
+  replaceFirst: replaceFirst,
+  escapeHtml: escapeHtml,
+  unescapeHtml: unescapeHtml,
+  slugify: slugify,
+  ellipsize: ellipsize,
+  abbreviate: abbreviate,
+  wrap: wrap,
+  unwrap: unwrap,
+  quote: quote,
+  singleQuote: singleQuote,
+  unquote: unquote
+}

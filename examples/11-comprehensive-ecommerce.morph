@@ -1,0 +1,251 @@
+// Comprehensive Example: E-commerce Order Processing
+// Demonstrates all major features of Morphium DSL
+
+import "morphs/DateUtils.morph" as dateUtils
+import "morphs/NumberUtils.morph" as numUtils
+import "morphs/FormatUtils.morph" as formatUtils
+
+// Custom functions for business logic
+function calculateShippingCost(total, country) {
+  let baseRate = country == "USA" ? 10 : 25
+  let freeShippingThreshold = 100
+  return total >= freeShippingThreshold ? 0 : baseRate
+}
+
+function calculateTax(amount, country) {
+  let taxRates = {
+    "USA": 0.08,
+    "UK": 0.20,
+    "Canada": 0.13,
+    "Australia": 0.10
+  }
+  let rate = get(taxRates, country) ?? 0.10
+  return numUtils.round(amount * rate, 2)
+}
+
+function categorizeOrder(total) {
+  return total >= 1000 ? "premium" :
+         (total >= 500 ? "standard" : "basic")
+}
+
+function calculateLoyaltyPoints(total) {
+  let rate = total >= 1000 ? 20 : 
+             (total >= 500 ? 10 : 5)
+  return floor(total * rate / 100)
+}
+
+// Main transformation
+let root = $
+let orders = root.orders
+let customers = root.customers
+
+// Create customer lookup
+let customerMap = indexBy(customers, "id")
+
+{
+  // Metadata
+  processedAt: dateUtils.now(),
+  processedYear: dateUtils.currentYear(),
+  reportMonth: dateUtils.monthName(dateUtils.currentMonth()),
+  
+  // Process all orders
+  orders: map(orders, "order", {
+    // Order identification
+    orderId: order.id,
+    orderNumber: formatUtils.padLeft(order.id, 8, "0"),
+    
+    // Customer information
+    customer: {
+      id: order.customerId,
+      name: formatUtils.titleCase(get(customerMap, order.customerId).name),
+      email: lower(get(customerMap, order.customerId).email),
+      memberSince: dateUtils.formatLong(get(customerMap, order.customerId).joinDate)
+    },
+    
+    // Order details
+    orderDate: dateUtils.formatShort(order.date),
+    orderMonth: dateUtils.extractMonth(order.date),
+    orderQuarter: dateUtils.getQuarterName(order.date),
+    
+    // Process line items
+    items: map(order.items, "item", {
+      productId: item.productId,
+      name: item.name,
+      quantity: item.quantity,
+      unitPrice: numUtils.formatCurrency(item.price, "$"),
+      subtotal: numUtils.formatCurrency(item.quantity * item.price, "$"),
+      discount: numUtils.formatPercent(item.discount * 100, 0)
+    }),
+    
+    // Calculate totals
+    itemsSubtotal: sum(map(order.items, "item", item.quantity * item.price)),
+    discountAmount: sum(map(order.items, "item", 
+      item.quantity * item.price * item.discount
+    )),
+    
+    shippingCost: calculateShippingCost(
+      sum(map(order.items, "item", item.quantity * item.price)),
+      order.country
+    ),
+    
+    // Tax calculation
+    taxAmount: calculateTax(
+      sum(map(order.items, "item", 
+        item.quantity * item.price * (1 - item.discount)
+      )),
+      order.country
+    ),
+    
+    // Grand total
+    grandTotal: sum(map(order.items, "item", 
+      item.quantity * item.price * (1 - item.discount)
+    )) + calculateShippingCost(
+      sum(map(order.items, "item", item.quantity * item.price)),
+      order.country
+    ) + calculateTax(
+      sum(map(order.items, "item", 
+        item.quantity * item.price * (1 - item.discount)
+      )),
+      order.country
+    ),
+    
+    // Order classification
+    category: categorizeOrder(sum(map(order.items, "item", 
+      item.quantity * item.price * (1 - item.discount)
+    ))),
+    
+    // Loyalty points
+    loyaltyPoints: calculateLoyaltyPoints(sum(map(order.items, "item", 
+      item.quantity * item.price * (1 - item.discount)
+    ))),
+    
+    // Status and flags
+    status: formatUtils.capitalize(order.status),
+    isPremium: sum(map(order.items, "item", 
+      item.quantity * item.price
+    )) >= 1000,
+    freeShipping: sum(map(order.items, "item", 
+      item.quantity * item.price
+    )) >= 100,
+    
+    // Formatted summary
+    summary: "Order " + formatUtils.padLeft(order.id, 8, "0") + 
+             " for " + formatUtils.titleCase(get(customerMap, order.customerId).name) +
+             " - " + numUtils.formatCurrency(
+               sum(map(order.items, "item", 
+                 item.quantity * item.price * (1 - item.discount)
+               )), "$"
+             )
+  }),
+  
+  // Analytics and aggregations
+  analytics: {
+    // Basic statistics
+    totalOrders: count(orders),
+    totalRevenue: sum(map(orders, "order",
+      sum(map(order.items, "item", 
+        item.quantity * item.price * (1 - item.discount)
+      ))
+    )),
+    averageOrderValue: avg(map(orders, "order",
+      sum(map(order.items, "item", 
+        item.quantity * item.price * (1 - item.discount)
+      ))
+    )),
+    
+    // Order categorization
+    ordersByCategory: {
+      premium: count(filter(orders, "order",
+        sum(map(order.items, "item", 
+          item.quantity * item.price * (1 - item.discount)
+        )) >= 1000
+      )),
+      standard: count(filter(orders, "order",
+        sum(map(order.items, "item", 
+          item.quantity * item.price * (1 - item.discount)
+        )) >= 500 && sum(map(order.items, "item", 
+          item.quantity * item.price * (1 - item.discount)
+        )) < 1000
+      )),
+      basic: count(filter(orders, "order",
+        sum(map(order.items, "item", 
+          item.quantity * item.price * (1 - item.discount)
+        )) < 500
+      ))
+    },
+    
+    // By status
+    ordersByStatus: groupBy(orders, "status"),
+    
+    // By country
+    ordersByCountry: groupBy(orders, "country"),
+    
+    // Top customers by order value
+    topCustomers: take(
+      reverse(sorted(
+        map(
+          distinct(pluck(orders, "customerId")),
+          "custId",
+          {
+            customerId: custId,
+            name: formatUtils.titleCase(get(customerMap, custId).name),
+            totalSpent: sum(map(
+              filter(orders, "order", order.customerId == custId),
+              "order",
+              sum(map(order.items, "item", 
+                item.quantity * item.price * (1 - item.discount)
+              ))
+            )),
+            orderCount: count(filter(orders, "order", order.customerId == custId))
+          }
+        ),
+        "totalSpent"
+      )),
+      5
+    ),
+    
+    // Monthly breakdown
+    monthlyStats: map(
+      distinct(map(orders, "order", dateUtils.extractMonth(order.date))),
+      "month",
+      {
+        month: dateUtils.monthName(month),
+        orderCount: count(filter(orders, "order", 
+          dateUtils.extractMonth(order.date) == month
+        )),
+        revenue: sum(map(
+          filter(orders, "order", dateUtils.extractMonth(order.date) == month),
+          "order",
+          sum(map(order.items, "item", 
+            item.quantity * item.price * (1 - item.discount)
+          ))
+        ))
+      }
+    ),
+    
+    // Formatted totals
+    formattedRevenue: numUtils.formatCurrency(
+      sum(map(orders, "order",
+        sum(map(order.items, "item", 
+          item.quantity * item.price * (1 - item.discount)
+        ))
+      )), "$"
+    ),
+    
+    formattedAverageOrder: numUtils.formatCurrency(
+      avg(map(orders, "order",
+        sum(map(order.items, "item", 
+          item.quantity * item.price * (1 - item.discount)
+        ))
+      )), "$"
+    ),
+    
+    compactRevenue: numUtils.formatCompact(
+      sum(map(orders, "order",
+        sum(map(order.items, "item", 
+          item.quantity * item.price * (1 - item.discount)
+        ))
+      ))
+    )
+  }
+}

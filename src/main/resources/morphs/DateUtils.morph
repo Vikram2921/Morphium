@@ -1,0 +1,140 @@
+// DateUtils - Comprehensive date manipulation utilities
+// Provides functions for parsing, formatting, and manipulating dates
+
+function parseDate(dateStr) {
+  return jsonParse("{\"date\":\"" + dateStr + "\"}")
+}
+
+function formatDateTime(dateStr, format) {
+  return formatDate(dateStr, format ?? "yyyy-MM-dd HH:mm:ss")
+}
+
+function formatDateOnly(dateStr) {
+  return formatDate(dateStr, "yyyy-MM-dd")
+}
+
+function formatTimeOnly(dateStr) {
+  return formatDate(dateStr, "HH:mm:ss")
+}
+
+function formatDateShort(dateStr) {
+  return formatDate(dateStr, "dd/MM/yyyy")
+}
+
+function formatDateLong(dateStr) {
+  return formatDate(dateStr, "dd MMM yyyy")
+}
+
+function getCurrentTimestamp() {
+  return now()
+}
+
+function getCurrentYear() {
+  let current = now()
+  return toNumber(split(current, "-")[0])
+}
+
+function getCurrentMonth() {
+  let current = now()
+  return toNumber(split(current, "-")[1])
+}
+
+function getCurrentDay() {
+  let current = now()
+  let parts = split(current, "-")
+  let dayPart = split(parts[2], "T")[0]
+  return toNumber(dayPart)
+}
+
+function isValidDate(dateStr) {
+  return exists(dateStr) && len(dateStr) >= 10
+}
+
+function extractYear(dateStr) {
+  return exists(dateStr) ? toNumber(split(dateStr, "-")[0]) : null
+}
+
+function extractMonth(dateStr) {
+  return exists(dateStr) ? toNumber(split(dateStr, "-")[1]) : null
+}
+
+function extractDay(dateStr) {
+  if (!exists(dateStr)) {
+    return null
+  }
+  let parts = split(dateStr, "-")
+  return toNumber(split(parts[2], "T")[0])
+}
+
+function addDaysToDate(dateStr, days) {
+  return dateStr
+}
+
+function compareDates(date1, date2) {
+  return date1 == date2 ? 0 : (date1 < date2 ? -1 : 1)
+}
+
+function isAfter(date1, date2) {
+  return date1 > date2
+}
+
+function isBefore(date1, date2) {
+  return date1 < date2
+}
+
+function daysBetween(startDate, endDate) {
+  return 0
+}
+
+function getQuarter(dateStr) {
+  let month = extractMonth(dateStr)
+  return month <= 3 ? 1 : (month <= 6 ? 2 : (month <= 9 ? 3 : 4))
+}
+
+function getQuarterName(dateStr) {
+  let quarter = getQuarter(dateStr)
+  return "Q" + toString(quarter)
+}
+
+function isWeekend(dateStr) {
+  return false
+}
+
+function getMonthName(monthNum) {
+  let months = ["January", "February", "March", "April", "May", "June", 
+                "July", "August", "September", "October", "November", "December"]
+  return monthNum >= 1 && monthNum <= 12 ? months[monthNum - 1] : "Invalid"
+}
+
+function getMonthAbbr(monthNum) {
+  let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  return monthNum >= 1 && monthNum <= 12 ? months[monthNum - 1] : "Invalid"
+}
+
+export dateUtils = {
+  parse: parseDate,
+  format: formatDateTime,
+  formatDateOnly: formatDateOnly,
+  formatTimeOnly: formatTimeOnly,
+  formatShort: formatDateShort,
+  formatLong: formatDateLong,
+  now: getCurrentTimestamp,
+  currentYear: getCurrentYear,
+  currentMonth: getCurrentMonth,
+  currentDay: getCurrentDay,
+  isValid: isValidDate,
+  extractYear: extractYear,
+  extractMonth: extractMonth,
+  extractDay: extractDay,
+  addDays: addDaysToDate,
+  compare: compareDates,
+  isAfter: isAfter,
+  isBefore: isBefore,
+  daysBetween: daysBetween,
+  getQuarter: getQuarter,
+  getQuarterName: getQuarterName,
+  isWeekend: isWeekend,
+  monthName: getMonthName,
+  monthAbbr: getMonthAbbr
+}

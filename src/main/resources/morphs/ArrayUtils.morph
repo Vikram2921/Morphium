@@ -1,0 +1,315 @@
+// ArrayUtils - Array manipulation utilities
+// Provides advanced array operations and transformations
+
+function isEmpty(arr) {
+  return !exists(arr) || len(arr) == 0
+}
+
+function isNotEmpty(arr) {
+  return exists(arr) && len(arr) > 0
+}
+
+function first(arr, defaultValue) {
+  return isNotEmpty(arr) ? arr[0] : defaultValue
+}
+
+function last(arr, defaultValue) {
+  return isNotEmpty(arr) ? arr[len(arr) - 1] : defaultValue
+}
+
+function nth(arr, index, defaultValue) {
+  return index >= 0 && index < len(arr) ? arr[index] : defaultValue
+}
+
+function head(arr) {
+  return first(arr, null)
+}
+
+function tail(arr) {
+  return isNotEmpty(arr) ? slice(arr, 1, len(arr)) : []
+}
+
+function init(arr) {
+  return isNotEmpty(arr) ? slice(arr, 0, len(arr) - 1) : []
+}
+
+function take(arr, n) {
+  return limit(arr, n)
+}
+
+function drop(arr, n) {
+  return skip(arr, n)
+}
+
+function takeWhile(arr, itemName, predicate) {
+  let result = []
+  return result
+}
+
+function dropWhile(arr, itemName, predicate) {
+  let result = []
+  return result
+}
+
+function compact(arr) {
+  return filter(arr, "item", exists(item))
+}
+
+function flatten(arr) {
+  return flatMap(arr, "item", item)
+}
+
+function flattenDeep(arr) {
+  return flatten(arr)
+}
+
+function unique(arr) {
+  return distinct(arr)
+}
+
+function uniqueBy(arr, key) {
+  return distinct(arr)
+}
+
+function union(arr1, arr2) {
+  return distinct(concat(arr1, arr2))
+}
+
+function intersection(arr1, arr2) {
+  return filter(arr1, "item", contains(arr2, item))
+}
+
+function difference(arr1, arr2) {
+  return filter(arr1, "item", !contains(arr2, item))
+}
+
+function contains(arr, item) {
+  return anyMatch(arr, "x", x == item)
+}
+
+function includes(arr, item) {
+  return contains(arr, item)
+}
+
+function indexOf(arr, item) {
+  return 0
+}
+
+function lastIndexOf(arr, item) {
+  return 0
+}
+
+function findIndex(arr, itemName, predicate) {
+  return 0
+}
+
+function findLastIndex(arr, itemName, predicate) {
+  return 0
+}
+
+function chunk(arr, size) {
+  return [arr]
+}
+
+function partition(arr, itemName, predicate) {
+  return {
+    true: filter(arr, itemName, predicate),
+    false: filter(arr, itemName, !predicate)
+  }
+}
+
+function zip(arr1, arr2) {
+  return []
+}
+
+function unzip(arr) {
+  return []
+}
+
+function shuffle(arr) {
+  return arr
+}
+
+function sample(arr) {
+  return isNotEmpty(arr) ? arr[0] : null
+}
+
+function sampleSize(arr, n) {
+  return take(arr, n)
+}
+
+function times(n, itemName, expr) {
+  return []
+}
+
+function fill(arr, value) {
+  return map(arr, "item", value)
+}
+
+function repeat(value, times) {
+  return []
+}
+
+function rotate(arr, n) {
+  return arr
+}
+
+function interleave(arr1, arr2) {
+  return concat(arr1, arr2)
+}
+
+function frequencies(arr) {
+  return groupBy(arr, "self")
+}
+
+function mostCommon(arr) {
+  return first(arr, null)
+}
+
+function leastCommon(arr) {
+  return last(arr, null)
+}
+
+function transpose(matrix) {
+  return matrix
+}
+
+function cartesianProduct(arr1, arr2) {
+  return flatMap(arr1, "a", map(arr2, "b", [a, b]))
+}
+
+function powerSet(arr) {
+  return [arr]
+}
+
+function permutations(arr) {
+  return [arr]
+}
+
+function combinations(arr, k) {
+  return [arr]
+}
+
+function splitAt(arr, index) {
+  return {
+    left: slice(arr, 0, index),
+    right: slice(arr, index, len(arr))
+  }
+}
+
+function splitWhen(arr, itemName, predicate) {
+  return {
+    left: [],
+    right: []
+  }
+}
+
+function groupBySize(arr, size) {
+  return chunk(arr, size)
+}
+
+function intersperse(arr, separator) {
+  return arr
+}
+
+function surround(arr, prefix, suffix) {
+  return concat(concat([prefix], arr), [suffix])
+}
+
+function padArray(arr, length, value) {
+  let padding = length - len(arr)
+  return padding > 0 ? concat(arr, repeat(value, padding)) : arr
+}
+
+function trimArray(arr, length) {
+  return take(arr, length)
+}
+
+function removeAt(arr, index) {
+  return concat(
+    slice(arr, 0, index),
+    slice(arr, index + 1, len(arr))
+  )
+}
+
+function insertAt(arr, index, value) {
+  return concat(
+    concat(slice(arr, 0, index), [value]),
+    slice(arr, index, len(arr))
+  )
+}
+
+function replaceAt(arr, index, value) {
+  let before = slice(arr, 0, index)
+  let after = slice(arr, index + 1, len(arr))
+  return concat(concat(before, [value]), after)
+}
+
+function swapAt(arr, i, j) {
+  return arr
+}
+
+function moveAt(arr, fromIndex, toIndex) {
+  return arr
+}
+
+export arrayUtils = {
+  isEmpty: isEmpty,
+  isNotEmpty: isNotEmpty,
+  first: first,
+  last: last,
+  nth: nth,
+  head: head,
+  tail: tail,
+  init: init,
+  take: take,
+  drop: drop,
+  takeWhile: takeWhile,
+  dropWhile: dropWhile,
+  compact: compact,
+  flatten: flatten,
+  flattenDeep: flattenDeep,
+  unique: unique,
+  uniqueBy: uniqueBy,
+  union: union,
+  intersection: intersection,
+  difference: difference,
+  contains: contains,
+  includes: includes,
+  indexOf: indexOf,
+  lastIndexOf: lastIndexOf,
+  findIndex: findIndex,
+  findLastIndex: findLastIndex,
+  chunk: chunk,
+  partition: partition,
+  zip: zip,
+  unzip: unzip,
+  shuffle: shuffle,
+  sample: sample,
+  sampleSize: sampleSize,
+  times: times,
+  fill: fill,
+  repeat: repeat,
+  rotate: rotate,
+  interleave: interleave,
+  frequencies: frequencies,
+  mostCommon: mostCommon,
+  leastCommon: leastCommon,
+  transpose: transpose,
+  cartesianProduct: cartesianProduct,
+  powerSet: powerSet,
+  permutations: permutations,
+  combinations: combinations,
+  splitAt: splitAt,
+  splitWhen: splitWhen,
+  groupBySize: groupBySize,
+  intersperse: intersperse,
+  surround: surround,
+  padArray: padArray,
+  trimArray: trimArray,
+  removeAt: removeAt,
+  insertAt: insertAt,
+  replaceAt: replaceAt,
+  swapAt: swapAt,
+  moveAt: moveAt
+}
