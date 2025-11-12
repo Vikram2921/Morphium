@@ -16,6 +16,7 @@ public class Lexer {
         KEYWORDS.put("else", Token.Type.ELSE);
         KEYWORDS.put("for", Token.Type.FOR);
         KEYWORDS.put("of", Token.Type.OF);
+        KEYWORDS.put("in", Token.Type.IN);
         KEYWORDS.put("import", Token.Type.IMPORT);
         KEYWORDS.put("export", Token.Type.EXPORT);
         KEYWORDS.put("as", Token.Type.AS);
@@ -27,6 +28,7 @@ public class Lexer {
         KEYWORDS.put("case", Token.Type.CASE);
         KEYWORDS.put("default", Token.Type.DEFAULT);
         KEYWORDS.put("break", Token.Type.BREAK);
+        KEYWORDS.put("continue", Token.Type.CONTINUE);
         KEYWORDS.put("true", Token.Type.TRUE);
         KEYWORDS.put("false", Token.Type.FALSE);
         KEYWORDS.put("null", Token.Type.NULL);

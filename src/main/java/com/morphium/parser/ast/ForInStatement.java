@@ -2,19 +2,21 @@ package com.morphium.parser.ast;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.IntNode;
 import com.morphium.runtime.Context;
 import com.morphium.util.JsonUtil;
 
 /**
- * For-of loop: for (item of array) body
+ * For-in loop: for (index in array) body
+ * Provides index-based iteration over arrays
  */
-public class ForOfStatement implements Expression {
-    private final String itemName;
+public class ForInStatement implements Expression {
+    private final String indexName;
     private final Expression iterable;
     private final Expression body;
 
-    public ForOfStatement(String itemName, Expression iterable, Expression body) {
-        this.itemName = itemName;
+    public ForInStatement(String indexName, Expression iterable, Expression body) {
+        this.indexName = indexName;
         this.iterable = iterable;
         this.body = body;
     }
@@ -24,16 +26,17 @@ public class ForOfStatement implements Expression {
         JsonNode iterableValue = iterable.evaluate(context);
         
         if (!iterableValue.isArray()) {
-            throw new RuntimeException("For-of loop requires an array");
+            throw new RuntimeException("For-in loop requires an array");
         }
         
         ArrayNode results = JsonUtil.createArray();
+        int size = iterableValue.size();
         
-        // Iterate over array
-        for (JsonNode item : iterableValue) {
+        // Iterate over indices
+        for (int i = 0; i < size; i++) {
             // Create new context for loop iteration
             Context loopContext = new Context(context);
-            loopContext.define(itemName, item);
+            loopContext.define(indexName, IntNode.valueOf(i));
             
             try {
                 // Evaluate body
@@ -55,8 +58,8 @@ public class ForOfStatement implements Expression {
         return results;
     }
 
-    public String getItemName() {
-        return itemName;
+    public String getIndexName() {
+        return indexName;
     }
 
     public Expression getIterable() {

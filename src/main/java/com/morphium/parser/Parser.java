@@ -51,7 +51,13 @@ public class Parser {
             } else if (match(Token.Type.SWITCH)) {
                 block.addExpression(parseSwitchStatement());
             } else if (match(Token.Type.FOR)) {
-                block.addExpression(parseForOfStatement());
+                block.addExpression(parseForLoop());
+            } else if (match(Token.Type.BREAK)) {
+                block.addExpression(new BreakStatement());
+                matchOptional(Token.Type.SEMICOLON);
+            } else if (match(Token.Type.CONTINUE)) {
+                block.addExpression(new ContinueStatement());
+                matchOptional(Token.Type.SEMICOLON);
             } else {
                 block.addExpression(parseExpression());
                 if (!isAtEnd()) {
@@ -427,7 +433,17 @@ public class Parser {
         }
         
         if (match(Token.Type.FOR)) {
-            return parseForOfStatement();
+            return parseForLoop();
+        }
+        
+        if (match(Token.Type.BREAK)) {
+            matchOptional(Token.Type.SEMICOLON);
+            return new BreakStatement();
+        }
+        
+        if (match(Token.Type.CONTINUE)) {
+            matchOptional(Token.Type.SEMICOLON);
+            return new ContinueStatement();
         }
         
         if (match(Token.Type.LPAREN)) {
@@ -587,16 +603,26 @@ public class Parser {
         return new SwitchStatement(expression, cases, defaultCase);
     }
     
-    private Expression parseForOfStatement() {
+    private Expression parseForLoop() {
         consume(Token.Type.LPAREN, "Expected '(' after 'for'");
-        Token itemName = consume(Token.Type.IDENTIFIER, "Expected variable name in for loop");
-        consume(Token.Type.OF, "Expected 'of' in for-of loop");
-        Expression iterable = parseExpression();
-        consume(Token.Type.RPAREN, "Expected ')' after for-of header");
+        Token varName = consume(Token.Type.IDENTIFIER, "Expected variable name in for loop");
         
-        Expression body = parseStatementOrBlock();
-        
-        return new ForOfStatement(itemName.getLexeme(), iterable, body);
+        // Check if it's for-of or for-in
+        if (match(Token.Type.OF)) {
+            // for (item of array)
+            Expression iterable = parseExpression();
+            consume(Token.Type.RPAREN, "Expected ')' after for-of header");
+            Expression body = parseStatementOrBlock();
+            return new ForOfStatement(varName.getLexeme(), iterable, body);
+        } else if (match(Token.Type.IN)) {
+            // for (index in array)
+            Expression iterable = parseExpression();
+            consume(Token.Type.RPAREN, "Expected ')' after for-in header");
+            Expression body = parseStatementOrBlock();
+            return new ForInStatement(varName.getLexeme(), iterable, body);
+        } else {
+            throw error(peek(), "Expected 'of' or 'in' in for loop");
+        }
     }
     
     private Expression parseStatementOrBlock() {
@@ -614,7 +640,13 @@ public class Parser {
                 } else if (match(Token.Type.SWITCH)) {
                     block.addExpression(parseSwitchStatement());
                 } else if (match(Token.Type.FOR)) {
-                    block.addExpression(parseForOfStatement());
+                    block.addExpression(parseForLoop());
+                } else if (match(Token.Type.BREAK)) {
+                    block.addExpression(new BreakStatement());
+                    matchOptional(Token.Type.SEMICOLON);
+                } else if (match(Token.Type.CONTINUE)) {
+                    block.addExpression(new ContinueStatement());
+                    matchOptional(Token.Type.SEMICOLON);
                 } else if (match(Token.Type.RETURN)) {
                     Expression returnExpr = parseExpression();
                     matchOptional(Token.Type.SEMICOLON);
