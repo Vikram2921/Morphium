@@ -2,6 +2,12 @@
 
 A JavaScript-like JSON transformation DSL for Java with user-defined functions, modules, and global/local variables.
 
+## 🎯 Quick Links
+
+- 🚀 **[Quick Start Guide](QUICKSTART.md)** - Get started in 5 minutes!
+- 🎮 **[Playground Guide](PLAYGROUND.md)** - Interactive web interface
+- 📚 **[Implementation Details](IMPLEMENTATION_SUMMARY.md)** - Architecture & design
+
 ## 🚀 Try the Interactive Playground!
 
 ```bash

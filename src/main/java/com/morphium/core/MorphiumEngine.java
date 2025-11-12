@@ -48,6 +48,23 @@ public class MorphiumEngine {
     public void registerFunction(String namespace, String name, HostFunction function) {
         functionRegistry.register(namespace, name, function);
     }
+    
+    public void registerFunction(com.morphium.function.MorphiumFunction function) {
+        // Store a reference that will be resolved during evaluation
+        final com.morphium.function.MorphiumFunction func = function;
+        functionRegistry.register("", function.getName(), args -> {
+            if (args.length < func.getMinParams() || 
+                (func.getMaxParams() != -1 && args.length > func.getMaxParams())) {
+                throw new MorphiumException(
+                    "Function " + func.getName() + " expects " + 
+                    func.getMinParams() + " to " + func.getMaxParams() + 
+                    " parameters, got " + args.length
+                );
+            }
+            // Pass null as root for now - will be enhanced later
+            return func.call(null, args);
+        });
+    }
 
     private String loadSource(String path) throws IOException {
         Path filePath = Paths.get(path);
