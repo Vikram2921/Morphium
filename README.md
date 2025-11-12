@@ -2,11 +2,23 @@
 
 A JavaScript-like JSON transformation DSL for Java with user-defined functions, modules, and global/local variables.
 
+## 🚀 Try the Interactive Playground!
+
+```bash
+mvn compile exec:java
+```
+
+Open **http://localhost:8080** in your browser for a real-time playground with examples!
+
+👉 See [PLAYGROUND.md](PLAYGROUND.md) for full playground documentation.
+
 ## Key Features
 
 - ✅ **JavaScript-like syntax** - Familiar to JS developers
+- ✅ **`$` input variable** - Use `$` to access input (like `$.name`)
 - ✅ **User-defined functions** - Create reusable logic
-- ✅ **Global & local variables** - Proper scoping
+- ✅ **Global & local variables** - Proper scoping with `let` and `global`
+- ✅ **Variable assignment** - Assign `$` to variables: `let root = $`
 - ✅ **Module system** - Import and export functions
 - ✅ **Rich built-ins** - map, filter, reduce, merge, and 20+ functions
 - ✅ **Jackson-based** - Uses `JsonNode` instead of Gson
@@ -26,9 +38,26 @@ MorphiumEngine engine = new MorphiumEngine();
 ObjectNode input = JsonUtil.createObject();
 input.put("value", 42);
 
-// Transform
-String transform = "{ doubled: input.value * 2 }";
+// Transform using $ for input
+String transform = "{ doubled: $.value * 2 }";
 JsonNode output = engine.transformFromString(transform, input);
+```
+
+## The `$` Variable
+
+Morphium uses `$` to represent the input JSON (similar to JSONata):
+
+```javascript
+// Direct access
+{ name: $.person.name, age: $.person.age }
+
+// Assign to variables
+let root = $
+let person = root.person
+{ fullName: person.first + " " + person.last }
+
+// Use in functions
+map($.items, "item", item.price * 2)
 ```
 
 ## Custom Functions
@@ -66,7 +95,7 @@ public class AddFunction implements MorphiumFunction {
 
 // Register and use
 engine.registerFunction(new AddFunction());
-String transform = "{ sum: add(input.a, input.b) }";
+String transform = "{ sum: add($.a, $.b) }";
 ```
 
 ## Transform Examples

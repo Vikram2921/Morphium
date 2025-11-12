@@ -16,7 +16,7 @@ public class MorphiumEngineTest {
 
     @Test
     public void testFlattenAndRename() throws Exception {
-        String transform = "{ fullName: input.person.first + \" \" + input.person.last, years: input.age }";
+        String transform = "{ fullName: $.person.first + \" \" + $.person.last, years: $.age }";
         
         ObjectNode input = JsonUtil.createObject();
         ObjectNode person = JsonUtil.createObject();
@@ -36,7 +36,7 @@ public class MorphiumEngineTest {
 
     @Test
     public void testArrayLiterals() throws Exception {
-        String transform = "[1, 2, 3, input.value]";
+        String transform = "[1, 2, 3, $.value]";
         
         ObjectNode input = JsonUtil.createObject();
         input.put("value", 4);
@@ -53,7 +53,7 @@ public class MorphiumEngineTest {
 
     @Test
     public void testArithmeticOperations() throws Exception {
-        String transform = "{ sum: input.a + input.b, product: input.a * input.b }";
+        String transform = "{ sum: $.a + $.b, product: $.a * $.b }";
         
         ObjectNode input = JsonUtil.createObject();
         input.put("a", 5);
@@ -69,7 +69,7 @@ public class MorphiumEngineTest {
 
     @Test
     public void testConditionalExpression() throws Exception {
-        String transform = "{ status: input.age >= 18 ? \"adult\" : \"minor\" }";
+        String transform = "{ status: $.age >= 18 ? \"adult\" : \"minor\" }";
         
         ObjectNode input = JsonUtil.createObject();
         input.put("age", 20);
@@ -83,7 +83,7 @@ public class MorphiumEngineTest {
 
     @Test
     public void testSafeNavigation() throws Exception {
-        String transform = "{ city: input?.address?.city ?? \"Unknown\" }";
+        String transform = "{ city: $?.address?.city ?? \"Unknown\" }";
         
         ObjectNode input = JsonUtil.createObject();
 
@@ -96,7 +96,7 @@ public class MorphiumEngineTest {
 
     @Test
     public void testStringOperations() throws Exception {
-        String transform = "{ upperName: upper(input.name), lowerName: lower(input.name) }";
+        String transform = "{ upperName: upper($.name), lowerName: lower($.name) }";
         
         ObjectNode input = JsonUtil.createObject();
         input.put("name", "John");
@@ -111,7 +111,7 @@ public class MorphiumEngineTest {
 
     @Test
     public void testLengthFunction() throws Exception {
-        String transform = "{ arrayLen: len(input.items), stringLen: len(input.text) }";
+        String transform = "{ arrayLen: len($.items), stringLen: len($.text) }";
         
         ObjectNode input = JsonUtil.createObject();
         input.set("items", mapper.readTree("[1,2,3]"));
@@ -127,7 +127,7 @@ public class MorphiumEngineTest {
 
     @Test
     public void testExistsFunction() throws Exception {
-        String transform = "{ hasName: exists(input.name), hasAge: exists(input.age) }";
+        String transform = "{ hasName: exists($.name), hasAge: exists($.age) }";
         
         ObjectNode input = JsonUtil.createObject();
         input.put("name", "John");
@@ -171,7 +171,7 @@ public class MorphiumEngineTest {
 
     @Test
     public void testComputedPropertyKeys() throws Exception {
-        String transform = "{ [input.keyName]: input.value }";
+        String transform = "{ [$.keyName]: $.value }";
         
         ObjectNode input = JsonUtil.createObject();
         input.put("keyName", "dynamicKey");

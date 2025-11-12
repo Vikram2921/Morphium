@@ -61,7 +61,7 @@ public class MorphiumEngine {
             Expression rootExpression = parser.parse();
 
             Context evalContext = new Context(rootContext);
-            evalContext.define("input", input);
+            evalContext.define("$", input);
 
             // Handle imports and evaluate
             JsonNode result = rootExpression.evaluate(evalContext);

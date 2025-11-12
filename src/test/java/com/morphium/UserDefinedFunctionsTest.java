@@ -18,7 +18,7 @@ public class UserDefinedFunctionsTest {
     public void testSimpleFunctionDefinition() throws Exception {
         String transform = 
             "function double(x) { return x * 2 }\n" +
-            "{ result: double(input.value) }";
+            "{ result: double($.value) }";
         
         ObjectNode input = JsonUtil.createObject();
         input.put("value", 5);
@@ -34,7 +34,7 @@ public class UserDefinedFunctionsTest {
     public void testFunctionWithMultipleParameters() throws Exception {
         String transform = 
             "function add(a, b) { return a + b }\n" +
-            "{ result: add(input.x, input.y) }";
+            "{ result: add($.x, $.y) }";
         
         ObjectNode input = JsonUtil.createObject();
         input.put("x", 3);
@@ -121,7 +121,7 @@ public class UserDefinedFunctionsTest {
     public void testFunctionInMapOperation() throws Exception {
         String transform = 
             "function double(x) { return x * 2 }\n" +
-            "{ items: map(input.numbers, \"n\", double(n)) }";
+            "{ items: map($.numbers, \"n\", double(n)) }";
         
         ObjectNode input = JsonUtil.createObject();
         input.set("numbers", mapper.readTree("[1, 2, 3, 4]"));
@@ -165,7 +165,7 @@ public class UserDefinedFunctionsTest {
             "  return \"$\" + toString(value)\n" +
             "}\n" +
             "{\n" +
-            "  items: map(input.items, \"item\", {\n" +
+            "  items: map($.items, \"item\", {\n" +
             "    name: item.name,\n" +
             "    originalPrice: item.price,\n" +
             "    discountedPrice: applyDiscount(item.price),\n" +
@@ -188,5 +188,59 @@ public class UserDefinedFunctionsTest {
         assertEquals(100, firstItem.get("originalPrice").asInt());
         assertEquals(85, firstItem.get("discountedPrice").asInt());
         assertTrue(firstItem.get("formatted").asText().contains("85"));
+    }
+
+    @Test
+    public void testAssignDollarToVariable() throws Exception {
+        String transform = 
+            "let root = $\n" +
+            "let data = root.contextVariables\n" +
+            "{\n" +
+            "  name: root.name,\n" +
+            "  value: data.value\n" +
+            "}";
+        
+        ObjectNode input = JsonUtil.createObject();
+        input.put("name", "Test");
+        ObjectNode contextVars = JsonUtil.createObject();
+        contextVars.put("value", 42);
+        input.set("contextVariables", contextVars);
+
+        MorphiumEngine engine = new MorphiumEngine();
+        JsonNode result = engine.transformFromString(transform, input);
+
+        ObjectNode obj = (ObjectNode) result;
+        assertEquals("Test", obj.get("name").asText());
+        assertEquals(42, obj.get("value").asInt());
+    }
+
+    @Test
+    public void testGlobalVariableWithDollar() throws Exception {
+        String transform = 
+            "let root = $\n" +
+            "let config = root.config\n" +
+            "{\n" +
+            "  status: config.status,\n" +
+            "  items: map(root.items, \"item\", {\n" +
+            "    id: item.id,\n" +
+            "    enabled: config.enableAll\n" +
+            "  })\n" +
+            "}";
+        
+        ObjectNode input = JsonUtil.createObject();
+        ObjectNode config = JsonUtil.createObject();
+        config.put("status", "active");
+        config.put("enableAll", true);
+        input.set("config", config);
+        input.set("items", mapper.readTree("[{\"id\":\"A\"},{\"id\":\"B\"}]"));
+
+        MorphiumEngine engine = new MorphiumEngine();
+        JsonNode result = engine.transformFromString(transform, input);
+
+        ObjectNode obj = (ObjectNode) result;
+        assertEquals("active", obj.get("status").asText());
+        ArrayNode items = (ArrayNode) obj.get("items");
+        assertEquals(2, items.size());
+        assertTrue(((ObjectNode)items.get(0)).get("enabled").asBoolean());
     }
 }
