@@ -109,6 +109,9 @@ Welcome to the complete interactive documentation for Morphium DSL! This guide c
 - [Real-World Examples](22-real-world-examples.md) ✅
 - [Common Patterns](23-common-patterns.md) ✅
 - [Migration Guide](24-migration-guide.md) ✅
+- [Importing Resource Morphs](25-importing-resource-morphs.md) ✅ - **NEW!** Complete guide to using utility modules
+- [Quick Reference: Imports](26-quick-reference-imports.md) ✅ - **NEW!** Copy-paste examples for all utilities
+- [Complete Working Example](27-complete-example.md) ✅ - **NEW!** E-commerce order processing with all features
 
 ---
 

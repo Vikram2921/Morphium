@@ -1,14 +1,20 @@
 package com.morphium.runtime;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.Data;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+@Data
 public class ModuleResolver {
-    private final Path basePath;
+    private Path basePath;
     private final Map<String, DynamicScriptResolver> dynamicResolvers;
 
     public ModuleResolver() {
@@ -56,13 +62,16 @@ public class ModuleResolver {
 
     public String resolve(String modulePath) throws IOException {
         Path fullPath = basePath.resolve(modulePath);
-        if (!Files.exists(fullPath)) {
-            throw new IOException("Module not found: " + modulePath);
+        if (Files.exists(fullPath)) {
+            return Files.readString(fullPath);
         }
-        return Files.readString(fullPath);
-    }
 
-    public Path getBasePath() {
-        return basePath;
+        // Fallback: try reading from classpath (resources)
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(modulePath)) {
+            if (is == null) {
+                throw new IOException("Module not found: " + modulePath);
+            }
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 }
