@@ -1,5 +1,8 @@
 package com.morphium.parser;
 
+import lombok.Getter;
+
+@Getter
 public class Token {
     public enum Type {
         // Literals
@@ -38,30 +41,6 @@ public class Token {
         this.line = line;
         this.column = column;
         this.sourcePath = sourcePath;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public String getLexeme() {
-        return lexeme;
-    }
-
-    public Object getLiteral() {
-        return literal;
-    }
-
-    public int getLine() {
-        return line;
-    }
-
-    public int getColumn() {
-        return column;
-    }
-
-    public String getSourcePath() {
-        return sourcePath;
     }
 
     @Override

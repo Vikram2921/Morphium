@@ -2,7 +2,9 @@ package com.morphium.parser.ast;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.runtime.Context;
+import lombok.Getter;
 
+@Getter
 public class ExportStatement implements Expression {
     private final String name;
     private final Expression value;
@@ -19,11 +21,4 @@ public class ExportStatement implements Expression {
         return result;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Expression getValue() {
-        return value;
-    }
 }

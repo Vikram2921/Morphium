@@ -23,29 +23,19 @@ public class Parser {
         while (!isAtEnd()) {
             if (match(Token.Type.IMPORT)) {
                 Expression importExpr = parseImportStatement();
-                if (importExpr != null) {
                 block.addExpression(importExpr);
-                }
             } else if (match(Token.Type.EXPORT)) {
                 Expression exportExpr = parseExportStatement();
-                if (exportExpr != null) {
                 block.addExpression(exportExpr);
-                }
             } else if (match(Token.Type.FUNCTION)) {
                 Expression funcExpr = parseFunctionDefinition();
-                if (funcExpr != null) {
                 block.addExpression(funcExpr);
-                }
             } else if (match(Token.Type.LET)) {
                 Expression letExpr = parseLetDeclaration(block);
-                if (letExpr != null) {
                 block.addExpression(letExpr);
-                }
             } else if (match(Token.Type.GLOBAL)) {
                 Expression globalExpr = parseGlobalDeclaration();
-                if (globalExpr != null) {
                 block.addExpression(globalExpr);
-                }
             } else if (match(Token.Type.IF)) {
                 block.addExpression(parseIfStatement());
             } else if (match(Token.Type.SWITCH)) {
@@ -134,9 +124,7 @@ public class Parser {
                 break;
             } else if (match(Token.Type.LET)) {
                 Expression letExpr = parseLetDeclaration(block);
-                if (letExpr != null) {
-                    block.addExpression(letExpr);
-                }
+                block.addExpression(letExpr);
             } else {
                 block.addExpression(parseExpression());
                 matchOptional(Token.Type.SEMICOLON);
@@ -517,12 +505,10 @@ public class Parser {
         return false;
     }
 
-    private boolean matchOptional(Token.Type type) {
+    private void matchOptional(Token.Type type) {
         if (check(type)) {
             advance();
-            return true;
         }
-        return false;
     }
 
     private Token consume(Token.Type type, String message) {
@@ -632,9 +618,7 @@ public class Parser {
             while (!check(Token.Type.RBRACE) && !isAtEnd()) {
                 if (match(Token.Type.LET)) {
                     Expression letExpr = parseLetDeclaration(block);
-                    if (letExpr != null) {
-                        block.addExpression(letExpr);
-                    }
+                    block.addExpression(letExpr);
                 } else if (match(Token.Type.IF)) {
                     block.addExpression(parseIfStatement());
                 } else if (match(Token.Type.SWITCH)) {

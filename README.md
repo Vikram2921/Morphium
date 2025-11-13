@@ -4,6 +4,21 @@
 
 This document summarizes all the improvements, features, and documentation created for the Morphium DSL project.
 
+## 🚀 Quick Start
+
+**Try the Professional Playground:**
+```bash
+# Windows
+run-playground.bat
+
+# Linux/Mac
+./run-playground.sh
+```
+
+Then open http://localhost:8080 in your browser for a professional JSON transformation development environment.
+
+See [PLAYGROUND.md](PLAYGROUND.md) for complete playground documentation.
+
 ---
 
 ## ✅ Completed Features

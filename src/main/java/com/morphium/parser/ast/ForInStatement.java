@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.morphium.runtime.Context;
 import com.morphium.util.JsonUtil;
+import lombok.Getter;
 
 /**
  * For-in loop: for (index in array) body
  * Provides index-based iteration over arrays
  */
+@Getter
 public class ForInStatement implements Expression {
     private final String indexName;
     private final Expression iterable;
@@ -58,15 +60,4 @@ public class ForInStatement implements Expression {
         return results;
     }
 
-    public String getIndexName() {
-        return indexName;
-    }
-
-    public Expression getIterable() {
-        return iterable;
-    }
-
-    public Expression getBody() {
-        return body;
-    }
 }

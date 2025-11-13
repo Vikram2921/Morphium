@@ -3,7 +3,9 @@ package com.morphium.parser.ast;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.morphium.runtime.Context;
+import lombok.Getter;
 
+@Getter
 public class GlobalVarStatement implements Expression {
     private final String name;
     private final Expression value;
@@ -20,11 +22,4 @@ public class GlobalVarStatement implements Expression {
         return NullNode.getInstance();
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Expression getValue() {
-        return value;
-    }
 }

@@ -2,12 +2,14 @@ package com.morphium.parser.ast;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.runtime.Context;
+import lombok.Getter;
 
 import java.util.List;
 
 /**
  * Switch statement: switch (expression) { case value: ... default: ... }
  */
+@Getter
 public class SwitchStatement implements Expression {
     private final Expression expression;
     private final List<CaseClause> cases;
@@ -56,18 +58,6 @@ public class SwitchStatement implements Expression {
         
         // Otherwise use Jackson's equals
         return a.equals(b);
-    }
-
-    public Expression getExpression() {
-        return expression;
-    }
-
-    public List<CaseClause> getCases() {
-        return cases;
-    }
-
-    public Expression getDefaultCase() {
-        return defaultCase;
     }
 
     /**

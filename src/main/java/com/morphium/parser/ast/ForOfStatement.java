@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.morphium.runtime.Context;
 import com.morphium.util.JsonUtil;
+import lombok.Getter;
 
 /**
  * For-of loop: for (item of array) body
  */
+@Getter
 public class ForOfStatement implements Expression {
     private final String itemName;
     private final Expression iterable;
@@ -55,15 +57,4 @@ public class ForOfStatement implements Expression {
         return results;
     }
 
-    public String getItemName() {
-        return itemName;
-    }
-
-    public Expression getIterable() {
-        return iterable;
-    }
-
-    public Expression getBody() {
-        return body;
-    }
 }

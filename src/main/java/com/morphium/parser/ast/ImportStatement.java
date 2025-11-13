@@ -1,12 +1,12 @@
 package com.morphium.parser.ast;
 
-import com.fasterxml.jackson.databind.node.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.runtime.Context;
+import lombok.Getter;
 
 import java.util.List;
 
+@Getter
 public class ImportStatement implements Expression {
     private final String modulePath;
     private final String alias;
@@ -38,23 +38,4 @@ public class ImportStatement implements Expression {
         return com.fasterxml.jackson.databind.node.NullNode.getInstance();
     }
 
-    public String getModulePath() {
-        return modulePath;
-    }
-
-    public String getAlias() {
-        return alias;
-    }
-
-    public List<String> getSpecificImports() {
-        return specificImports;
-    }
-    
-    public boolean isDynamic() {
-        return isDynamic;
-    }
-    
-    public List<Expression> getDynamicArgs() {
-        return dynamicArgs;
-    }
 }

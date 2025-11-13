@@ -3,10 +3,12 @@ package com.morphium.parser.ast;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.morphium.runtime.Context;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class BlockExpr implements Expression {
     private final List<Expression> expressions;
 
@@ -44,7 +46,4 @@ public class BlockExpr implements Expression {
         return result != null ? result : NullNode.getInstance();
     }
 
-    public List<Expression> getExpressions() {
-        return expressions;
-    }
 }

@@ -3,7 +3,9 @@ package com.morphium.parser.ast;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.*;
 import com.morphium.runtime.Context;
+import lombok.Getter;
 
+@Getter
 public class LiteralExpr implements Expression {
     private final Object value;
 
@@ -28,7 +30,4 @@ public class LiteralExpr implements Expression {
         throw new RuntimeException("Unknown literal type: " + value.getClass());
     }
 
-    public Object getValue() {
-        return value;
-    }
 }

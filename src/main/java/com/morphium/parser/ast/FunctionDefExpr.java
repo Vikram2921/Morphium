@@ -1,13 +1,12 @@
 package com.morphium.parser.ast;
 
-import com.fasterxml.jackson.databind.node.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.runtime.Context;
+import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class FunctionDefExpr implements Expression {
     private final String name;
     private final List<String> parameters;
@@ -27,15 +26,4 @@ public class FunctionDefExpr implements Expression {
         return com.fasterxml.jackson.databind.node.NullNode.getInstance();
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public List<String> getParameters() {
-        return parameters;
-    }
-
-    public Expression getBody() {
-        return body;
-    }
 }

@@ -2,10 +2,12 @@ package com.morphium.parser.ast;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.morphium.runtime.Context;
+import lombok.Getter;
 
 /**
  * If-else statement: if (condition) thenBranch else elseBranch
  */
+@Getter
 public class IfStatement implements Expression {
     private final Expression condition;
     private final Expression thenBranch;
@@ -43,15 +45,4 @@ public class IfStatement implements Expression {
         return true;
     }
 
-    public Expression getCondition() {
-        return condition;
-    }
-
-    public Expression getThenBranch() {
-        return thenBranch;
-    }
-
-    public Expression getElseBranch() {
-        return elseBranch;
-    }
 }

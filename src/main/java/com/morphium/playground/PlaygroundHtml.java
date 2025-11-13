@@ -7,14 +7,16 @@ public class PlaygroundHtml {
 "<head>\n" +
 "    <meta charset=\"UTF-8\">\n" +
 "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-"    <title>Morphium Playground</title>\n" +
+"    <meta name=\"description\" content=\"Morphium - Professional JSON transformation DSL playground\">\n" +
+"    <meta name=\"author\" content=\"Morphium\">\n" +
+"    <title>Morphium Playground - JSON Transformation DSL</title>\n" +
 "    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css\">\n" +
 "    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css\">\n" +
 "    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material.min.css\">\n" +
 "    <style>\n" +
 "        * { margin: 0; padding: 0; box-sizing: border-box; }\n" +
 "        body {\n" +
-"            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n" +
+"            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;\n" +
 "            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n" +
 "            min-height: 100vh;\n" +
 "            padding: 20px;\n" +
@@ -32,16 +34,29 @@ public class PlaygroundHtml {
 "            color: white;\n" +
 "            padding: 30px;\n" +
 "            text-align: center;\n" +
+"            position: relative;\n" +
 "        }\n" +
 "        .header h1 {\n" +
 "            font-size: 2.5em;\n" +
 "            margin-bottom: 10px;\n" +
 "            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);\n" +
+"            font-weight: 700;\n" +
 "        }\n" +
 "        .header p {\n" +
 "            font-size: 1.1em;\n" +
-"            opacity: 0.9;\n" +
+"            opacity: 0.95;\n" +
+"            font-weight: 300;\n" +
 "        }\n" +
+"        .header .version {\n" +
+"            position: absolute;\n" +
+"            top: 10px;\n" +
+"            right: 20px;\n" +
+"            font-size: 0.85em;\n" +
+"            opacity: 0.8;\n" +
+"            background: rgba(255,255,255,0.2);\n" +
+"            padding: 5px 12px;\n" +
+"            border-radius: 15px;\n" +
+"        }\n"+
 "        .content {\n" +
 "            display: grid;\n" +
 "            grid-template-columns: 1fr 1fr;\n" +
@@ -205,21 +220,22 @@ public class PlaygroundHtml {
 "<body>\n" +
 "    <div class=\"container\">\n" +
 "        <div class=\"header\">\n" +
-"            <h1>🚀 Morphium Playground</h1>\n" +
-"            <p>Real-time JSON transformation DSL - Write, test, and see results instantly!</p>\n" +
+"            <div class=\"version\">v1.0.0</div>\n" +
+"            <h1>Morphium Playground</h1>\n" +
+"            <p>Professional JSON Transformation DSL - Enterprise-Ready Development Environment</p>\n" +
 "        </div>\n" +
-"        \n" +
+"        \n"+
 "        <div class=\"content\">\n" +
 "            <div class=\"panel transform-section\">\n" +
 "                <div class=\"panel-header\">\n" +
-"                    <span class=\"panel-title\">✨ Transform (Morphium DSL)</span>\n" +
+"                    <span class=\"panel-title\">Transform (Morphium DSL)</span>\n" +
 "                    <div class=\"auto-transform-toggle\">\n" +
 "                        <input type=\"checkbox\" id=\"autoTransform\" checked>\n" +
-"                        <label for=\"autoTransform\">Auto-transform</label>\n" +
+"                        <label for=\"autoTransform\">Auto-transform on change</label>\n" +
 "                    </div>\n" +
 "                </div>\n" +
 "                <div class=\"editor-container\">\n" +
-"                    <textarea id=\"transform\">{\n" +
+"                    <textarea id=\"transform\">{\n"+
 "  fullName: $.person.first + \" \" + $.person.last,\n" +
 "  age: $.person.age,\n" +
 "  email: $.person.email,\n" +
@@ -230,10 +246,10 @@ public class PlaygroundHtml {
 "            \n" +
 "            <div class=\"panel\">\n" +
 "                <div class=\"panel-header\">\n" +
-"                    <span class=\"panel-title\">📥 Input JSON</span>\n" +
+"                    <span class=\"panel-title\">Input JSON</span>\n" +
 "                </div>\n" +
 "                <div class=\"editor-container\">\n" +
-"                    <textarea id=\"input\">{\n" +
+"                    <textarea id=\"input\">{\n"+
 "  \"person\": {\n" +
 "    \"first\": \"John\",\n" +
 "    \"last\": \"Doe\",\n" +
@@ -246,7 +262,7 @@ public class PlaygroundHtml {
 "            \n" +
 "            <div class=\"panel\">\n" +
 "                <div class=\"panel-header\">\n" +
-"                    <span class=\"panel-title\">📤 Output JSON</span>\n" +
+"                    <span class=\"panel-title\">Output JSON</span>\n" +
 "                </div>\n" +
 "                <div class=\"editor-container\">\n" +
 "                    <div id=\"output\" class=\"output-area\"><pre>Output will appear here...</pre></div>\n" +
@@ -254,10 +270,11 @@ public class PlaygroundHtml {
 "            </div>\n" +
 "            \n" +
 "            <div class=\"button-container\">\n" +
-"                <button class=\"btn-primary\" onclick=\"transform()\">▶ Transform</button>\n" +
-"                <button class=\"btn-secondary\" onclick=\"clearAll()\">🗑 Clear</button>\n" +
-"                <button class=\"btn-secondary\" onclick=\"formatJson()\">✨ Format JSON</button>\n" +
-"            </div>\n" +
+"                <button class=\"btn-primary\" onclick=\"transform()\">Transform</button>\n" +
+"                <button class=\"btn-secondary\" onclick=\"clearAll()\">Clear All</button>\n" +
+"                <button class=\"btn-secondary\" onclick=\"formatJson()\">Format JSON</button>\n" +
+"                <button class=\"btn-secondary\" onclick=\"copyOutput()\">Copy Output</button>\n" +
+"            </div>\n"+
 "            \n" +
 "            <div class=\"status-bar\">\n" +
 "                <span id=\"status\" class=\"status-message status-info\">Ready to transform</span>\n" +
@@ -265,8 +282,8 @@ public class PlaygroundHtml {
 "            </div>\n" +
 "            \n" +
 "            <div class=\"examples\">\n" +
-"                <div class=\"examples-header\">📚 Quick Examples</div>\n" +
-"                <div class=\"example-buttons\">\n" +
+"                <div class=\"examples-header\">Example Transformations</div>\n" +
+"                <div class=\"example-buttons\">\n"+
 "                    <button class=\"example-btn\" onclick=\"loadExample('basic')\">Basic Transform</button>\n" +
 "                    <button class=\"example-btn\" onclick=\"loadExample('array')\">Array Map</button>\n" +
 "                    <button class=\"example-btn\" onclick=\"loadExample('filter')\">Filter</button>\n" +
@@ -607,18 +624,30 @@ public class PlaygroundHtml {
 "        \n" +
 "        if (result.success) {\n" +
 "            outputEl.innerHTML = '<pre>' + JSON.stringify(result.result, null, 2) + '</pre>';\n" +
-"            setStatus('✓ Transform successful!', 'success');\n" +
+"            setStatus('Transform completed successfully', 'success');\n" +
 "            document.getElementById('execTime').textContent = 'Executed in ' + result.executionTime + 'ms';\n" +
 "        } else {\n" +
-"            outputEl.innerHTML = '<pre style=\"color: #ff6b6b;\">Error: ' + result.error + '</pre>';\n" +
-"            setStatus('✗ Transform failed', 'error');\n" +
+"            outputEl.innerHTML = '<pre style=\"color: #ff6b6b;\">Error: ' + escapeHtml(result.error) + '</pre>';\n" +
+"            setStatus('Transform failed', 'error');\n" +
 "            document.getElementById('execTime').textContent = '';\n" +
 "        }\n" +
 "    } catch (error) {\n" +
-"        outputEl.innerHTML = '<pre style=\"color: #ff6b6b;\">Network error: ' + error.message + '</pre>';\n" +
-"        setStatus('✗ Network error', 'error');\n" +
+"        outputEl.innerHTML = '<pre style=\"color: #ff6b6b;\">Network error: ' + escapeHtml(error.message) + '</pre>';\n" +
+"        setStatus('Network error occurred', 'error');\n" +
+"        document.getElementById('execTime').textContent = '';\n" +
 "    }\n" +
 "}\n" +
+"\n" +
+"function escapeHtml(text) {\n" +
+"    const map = {\n" +
+"        '&': '&amp;',\n" +
+"        '<': '&lt;',\n" +
+"        '>': '&gt;',\n" +
+"        '\"': '&quot;',\n" +
+"        \"'\": '&#039;'\n" +
+"    };\n" +
+"    return text.replace(/[&<>\"']/g, function(m) { return map[m]; });\n" +
+"}\n"+
 "\n" +
 "function clearAll() {\n" +
 "    transformEditor.setValue('');\n" +
@@ -632,12 +661,28 @@ public class PlaygroundHtml {
 "    try {\n" +
 "        const parsed = JSON.parse(inputEditor.getValue());\n" +
 "        inputEditor.setValue(JSON.stringify(parsed, null, 2));\n" +
-"        setStatus('JSON formatted', 'success');\n" +
+"        setStatus('JSON formatted successfully', 'success');\n" +
 "    } catch (error) {\n" +
 "        setStatus('Invalid JSON: ' + error.message, 'error');\n" +
 "    }\n" +
 "}\n" +
 "\n" +
+"function copyOutput() {\n" +
+"    const outputEl = document.getElementById('output');\n" +
+"    const text = outputEl.innerText;\n" +
+"    \n" +
+"    if (text === 'Output will appear here...') {\n" +
+"        setStatus('No output to copy', 'error');\n" +
+"        return;\n" +
+"    }\n" +
+"    \n" +
+"    navigator.clipboard.writeText(text).then(function() {\n" +
+"        setStatus('Output copied to clipboard', 'success');\n" +
+"    }).catch(function(err) {\n" +
+"        setStatus('Failed to copy: ' + err.message, 'error');\n" +
+"    });\n" +
+"}\n" +
+"\n"+
 "function setStatus(message, type) {\n" +
 "    const statusEl = document.getElementById('status');\n" +
 "    statusEl.textContent = message;\n" +
