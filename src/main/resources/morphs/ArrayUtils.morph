@@ -1,6 +1,3 @@
-// ArrayUtils - Array manipulation utilities
-// Provides advanced array operations and transformations
-
 function isEmpty(arr) {
   return !exists(arr) || len(arr) == 0
 }
@@ -251,65 +248,4 @@ function swapAt(arr, i, j) {
 
 function moveAt(arr, fromIndex, toIndex) {
   return arr
-}
-
-export arrayUtils = {
-  isEmpty: isEmpty,
-  isNotEmpty: isNotEmpty,
-  first: first,
-  last: last,
-  nth: nth,
-  head: head,
-  tail: tail,
-  init: init,
-  take: take,
-  drop: drop,
-  takeWhile: takeWhile,
-  dropWhile: dropWhile,
-  compact: compact,
-  flatten: flatten,
-  flattenDeep: flattenDeep,
-  unique: unique,
-  uniqueBy: uniqueBy,
-  union: union,
-  intersection: intersection,
-  difference: difference,
-  contains: contains,
-  includes: includes,
-  indexOf: indexOf,
-  lastIndexOf: lastIndexOf,
-  findIndex: findIndex,
-  findLastIndex: findLastIndex,
-  chunk: chunk,
-  partition: partition,
-  zip: zip,
-  unzip: unzip,
-  shuffle: shuffle,
-  sample: sample,
-  sampleSize: sampleSize,
-  times: times,
-  fill: fill,
-  repeat: repeat,
-  rotate: rotate,
-  interleave: interleave,
-  frequencies: frequencies,
-  mostCommon: mostCommon,
-  leastCommon: leastCommon,
-  transpose: transpose,
-  cartesianProduct: cartesianProduct,
-  powerSet: powerSet,
-  permutations: permutations,
-  combinations: combinations,
-  splitAt: splitAt,
-  splitWhen: splitWhen,
-  groupBySize: groupBySize,
-  intersperse: intersperse,
-  surround: surround,
-  padArray: padArray,
-  trimArray: trimArray,
-  removeAt: removeAt,
-  insertAt: insertAt,
-  replaceAt: replaceAt,
-  swapAt: swapAt,
-  moveAt: moveAt
 }

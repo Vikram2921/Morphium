@@ -1,6 +1,3 @@
-// ValidationUtils - Data validation utilities
-// Provides common validation functions
-
 function isEmail(str) {
   let s = toString(str)
   return contains(s, "@") && contains(s, ".")
@@ -255,66 +252,4 @@ function isValid(validationResult) {
 
 function hasErrors(validationResult) {
   return !validationResult.valid
-}
-
-export validationUtils = {
-  isEmail: isEmail,
-  isUrl: isUrl,
-  isPhone: isPhone,
-  isZipCode: isZipCode,
-  isCreditCard: isCreditCard,
-  isIPv4: isIPv4,
-  isIPv6: isIPv6,
-  isAlpha: isAlpha,
-  isAlphaNumeric: isAlphaNumeric,
-  isNumeric: isNumeric,
-  isInteger: isInteger,
-  isFloat: isFloat,
-  isLowercase: isLowercase,
-  isUppercase: isUppercase,
-  isLength: isLength,
-  minLength: minLength,
-  maxLength: maxLength,
-  matches: matches,
-  isIn: isIn,
-  isNotIn: isNotIn,
-  isEmpty: isEmpty,
-  isNotEmpty: isNotEmpty,
-  isBlank: isBlank,
-  isNotBlank: isNotBlank,
-  isRequired: isRequired,
-  isOptional: isOptional,
-  minValue: minValue,
-  maxValue: maxValue,
-  inRange: inRange,
-  isPositive: isPositive,
-  isNegative: isNegative,
-  isZero: isZero,
-  isDivisibleBy: isDivisibleBy,
-  isEven: isEven,
-  isOdd: isOdd,
-  isDate: isDate,
-  isDateAfter: isDateAfter,
-  isDateBefore: isDateBefore,
-  isDateBetween: isDateBetween,
-  isBoolean: isBoolean,
-  isTrue: isTrue,
-  isFalse: isFalse,
-  isArray: isArray,
-  isObject: isObject,
-  isNull: isNull,
-  isNotNull: isNotNull,
-  isUUID: isUUID,
-  isHexColor: isHexColor,
-  isJSON: isJSON,
-  isBase64: isBase64,
-  isMD5: isMD5,
-  isSHA1: isSHA1,
-  isSHA256: isSHA256,
-  validate: validate,
-  validateAll: validateAll,
-  validateField: validateField,
-  getErrors: getErrors,
-  isValid: isValid,
-  hasErrors: hasErrors
 }

@@ -22,7 +22,3 @@ function add(a, b) {
 function multiply(a, b) {
     return a * b;
 }
-
-export round = round;
-export add = add;
-export multiply = multiply;

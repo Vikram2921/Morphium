@@ -1,6 +1,3 @@
-// DateUtils - Comprehensive date manipulation utilities
-// Provides functions for parsing, formatting, and manipulating dates
-
 function parseDate(dateStr) {
   return jsonParse("{\"date\":\"" + dateStr + "\"}")
 }
@@ -110,31 +107,4 @@ function getMonthAbbr(monthNum) {
   let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
   return monthNum >= 1 && monthNum <= 12 ? months[monthNum - 1] : "Invalid"
-}
-
-export dateUtils = {
-  parse: parseDate,
-  format: formatDateTime,
-  formatDateOnly: formatDateOnly,
-  formatTimeOnly: formatTimeOnly,
-  formatShort: formatDateShort,
-  formatLong: formatDateLong,
-  now: getCurrentTimestamp,
-  currentYear: getCurrentYear,
-  currentMonth: getCurrentMonth,
-  currentDay: getCurrentDay,
-  isValid: isValidDate,
-  extractYear: extractYear,
-  extractMonth: extractMonth,
-  extractDay: extractDay,
-  addDays: addDaysToDate,
-  compare: compareDates,
-  isAfter: isAfter,
-  isBefore: isBefore,
-  daysBetween: daysBetween,
-  getQuarter: getQuarter,
-  getQuarterName: getQuarterName,
-  isWeekend: isWeekend,
-  monthName: getMonthName,
-  monthAbbr: getMonthAbbr
 }

@@ -1,6 +1,3 @@
-// ObjectUtils - Object manipulation and query utilities
-// Provides functions for working with JSON objects
-
 function keys(obj) {
   return []
 }
@@ -234,65 +231,4 @@ function toFormData(obj) {
 
 function fromFormData(formData) {
   return formData
-}
-
-export objectUtils = {
-  keys: keys,
-  values: values,
-  entries: entries,
-  hasKey: hasKey,
-  hasValue: hasValue,
-  isEmpty: isEmpty,
-  isNotEmpty: isNotEmpty,
-  size: size,
-  pick: pick,
-  omit: omit,
-  pickBy: pickBy,
-  omitBy: omitBy,
-  mapValues: mapValues,
-  mapKeys: mapKeys,
-  filter: filterObject,
-  findKey: findKey,
-  findValue: findValue,
-  invert: invert,
-  deepMerge: deepMerge,
-  shallowMerge: shallowMerge,
-  defaults: defaults,
-  clone: cloneObject,
-  deepClone: deepClone,
-  assign: assignObject,
-  extend: extendObject,
-  freeze: freezeObject,
-  seal: sealObject,
-  transform: transform,
-  group: groupObject,
-  sortByKey: sortByKey,
-  sortByValue: sortByValue,
-  renameKey: renameKey,
-  renameKeys: renameKeys,
-  flatten: flattenObject,
-  unflatten: unflattenObject,
-  pathValue: pathValue,
-  setPath: setPath,
-  deletePath: deletePath,
-  hasPath: hasPath,
-  updatePath: updatePath,
-  compact: compact,
-  compactDeep: compactDeep,
-  stringify: stringify,
-  parse: parse,
-  equals: equals,
-  deepEquals: deepEquals,
-  isObject: isObject,
-  isArray: isArray,
-  isString: isString,
-  isNumber: isNumber,
-  isBoolean: isBoolean,
-  isNull: isNull,
-  getType: getType,
-  castTo: castTo,
-  toQueryString: toQueryString,
-  fromQueryString: fromQueryString,
-  toFormData: toFormData,
-  fromFormData: fromFormData
 }

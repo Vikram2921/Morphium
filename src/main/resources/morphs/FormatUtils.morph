@@ -1,6 +1,3 @@
-// FormatUtils - String formatting and text manipulation utilities
-// Provides functions for formatting text, padding, truncating, etc.
-
 function padLeft(str, length, padChar) {
   let s = toString(str)
   let pad = padChar ?? " "
@@ -179,40 +176,4 @@ function unquote(str) {
     return slice(s, 1, len(s) - 1)
   }
   return s
-}
-
-export formatUtils = {
-  padLeft: padLeft,
-  padRight: padRight,
-  repeat: repeat,
-  truncate: truncate,
-  capitalize: capitalize,
-  capitalizeWords: capitalizeWords,
-  titleCase: toTitleCase,
-  camelCase: toCamelCase,
-  pascalCase: toPascalCase,
-  snakeCase: toSnakeCase,
-  kebabCase: toKebabCase,
-  removeWhitespace: removeWhitespace,
-  normalizeWhitespace: normalizeWhitespace,
-  leftTrim: leftTrim,
-  rightTrim: rightTrim,
-  reverse: reverse,
-  contains: contains,
-  startsWith: startsWith,
-  endsWith: endsWith,
-  indexOf: indexOf,
-  lastIndexOf: lastIndexOf,
-  replaceAll: replaceAll,
-  replaceFirst: replaceFirst,
-  escapeHtml: escapeHtml,
-  unescapeHtml: unescapeHtml,
-  slugify: slugify,
-  ellipsize: ellipsize,
-  abbreviate: abbreviate,
-  wrap: wrap,
-  unwrap: unwrap,
-  quote: quote,
-  singleQuote: singleQuote,
-  unquote: unquote
 }
