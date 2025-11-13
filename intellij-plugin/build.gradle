@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '1.17.4'
+}
+
+group = 'com.morphium'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.jetbrains:annotations:24.1.0'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+intellij {
+    version = '2023.2'
+    type = 'IC'
+    plugins = []
+}
+
+patchPluginXml {
+    sinceBuild = '232'
+    untilBuild = '253.*'
+}
+
+tasks {
+    buildSearchableOptions {
+        enabled = false
+    }
+    
+    runIde {
+        maxHeapSize = "2g"
+    }
+    
+    test {
+        enabled = false
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}

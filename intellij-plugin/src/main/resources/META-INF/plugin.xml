@@ -1,0 +1,70 @@
+<idea-plugin>
+    <id>com.morphium.morphium-language</id>
+    <name>Morphium Language Support</name>
+    <vendor email="support@morphium.com" url="https://github.com/morphium">Morphium</vendor>
+    <idea-version since-build="232" until-build="253.*"/>
+
+    <description><![CDATA[
+    Support for Morphium DSL (.morph files) with syntax highlighting, code navigation, and error detection.
+    <br/>
+    Features:
+    <ul>
+        <li>Syntax highlighting for keywords, functions, strings, and comments</li>
+        <li>Code navigation (Ctrl+Click) for function definitions and imports</li>
+        <li>Error highlighting for syntax errors</li>
+        <li>Code completion for keywords and functions</li>
+        <li>Brace matching and folding</li>
+    </ul>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- File Type -->
+        <fileType name="Morphium File"
+                  implementationClass="com.morphium.intellij.MorphFileType"
+                  fieldName="INSTANCE"
+                  language="Morph"
+                  extensions="morph"/>
+
+        <!-- Language -->
+        <lang.parserDefinition language="Morph"
+                               implementationClass="com.morphium.intellij.parser.MorphParserDefinition"/>
+
+        <!-- Syntax Highlighter -->
+        <lang.syntaxHighlighterFactory language="Morph"
+                                       implementationClass="com.morphium.intellij.highlight.MorphSyntaxHighlighterFactory"/>
+
+        <!-- Color Settings -->
+        <colorSettingsPage implementation="com.morphium.intellij.highlight.MorphColorSettingsPage"/>
+
+        <!-- Annotator for error highlighting -->
+        <annotator language="Morph"
+                   implementationClass="com.morphium.intellij.annotator.MorphAnnotator"/>
+
+        <!-- Code completion -->
+        <completion.contributor language="Morph"
+                                implementationClass="com.morphium.intellij.completion.MorphCompletionContributor"/>
+
+        <!-- Reference contributor for navigation -->
+        <psi.referenceContributor language="Morph"
+                                  implementation="com.morphium.intellij.reference.MorphReferenceContributor"/>
+
+        <!-- Brace Matcher -->
+        <lang.braceMatcher language="Morph"
+                          implementationClass="com.morphium.intellij.MorphBraceMatcher"/>
+
+        <!-- Commenter -->
+        <lang.commenter language="Morph"
+                       implementationClass="com.morphium.intellij.MorphCommenter"/>
+
+        <!-- Code Folding -->
+        <lang.foldingBuilder language="Morph"
+                            implementationClass="com.morphium.intellij.folding.MorphFoldingBuilder"/>
+
+        <!-- Find Usages -->
+        <lang.findUsagesProvider language="Morph"
+                                implementationClass="com.morphium.intellij.findusages.MorphFindUsagesProvider"/>
+    </extensions>
+</idea-plugin>
