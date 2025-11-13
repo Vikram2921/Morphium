@@ -24,27 +24,27 @@ public class Parser {
             if (match(Token.Type.IMPORT)) {
                 Expression importExpr = parseImportStatement();
                 if (importExpr != null) {
-                    block.addExpression(importExpr);
+                block.addExpression(importExpr);
                 }
             } else if (match(Token.Type.EXPORT)) {
                 Expression exportExpr = parseExportStatement();
                 if (exportExpr != null) {
-                    block.addExpression(exportExpr);
+                block.addExpression(exportExpr);
                 }
             } else if (match(Token.Type.FUNCTION)) {
                 Expression funcExpr = parseFunctionDefinition();
                 if (funcExpr != null) {
-                    block.addExpression(funcExpr);
+                block.addExpression(funcExpr);
                 }
             } else if (match(Token.Type.LET)) {
                 Expression letExpr = parseLetDeclaration(block);
                 if (letExpr != null) {
-                    block.addExpression(letExpr);
+                block.addExpression(letExpr);
                 }
             } else if (match(Token.Type.GLOBAL)) {
                 Expression globalExpr = parseGlobalDeclaration();
                 if (globalExpr != null) {
-                    block.addExpression(globalExpr);
+                block.addExpression(globalExpr);
                 }
             } else if (match(Token.Type.IF)) {
                 block.addExpression(parseIfStatement());

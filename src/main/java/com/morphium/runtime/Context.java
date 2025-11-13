@@ -6,14 +6,18 @@ import com.morphium.builtin.BuiltinFunctions;
 import com.morphium.parser.ast.Expression;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class Context {
     private final Context parent;
     private final Map<String, JsonNode> variables;
     private final Map<String, UserFunction> userFunctions;
+    private final Map<String, Map<String, UserFunction>> moduleFunctions;
     private final Map<String, JsonNode> exports;
+    private final Set<String> importedModules;
     private final HostFunctionRegistry functionRegistry;
     private final boolean isGlobal;
 
@@ -21,7 +25,9 @@ public class Context {
         this.parent = null;
         this.variables = new HashMap<>(16);
         this.userFunctions = new HashMap<>(8);
+        this.moduleFunctions = new HashMap<>(8);
         this.exports = new HashMap<>(8);
+        this.importedModules = new HashSet<>();
         this.functionRegistry = functionRegistry;
         this.isGlobal = true;
     }
@@ -30,7 +36,9 @@ public class Context {
         this.parent = parent;
         this.variables = new HashMap<>(8);
         this.userFunctions = new HashMap<>(4);
+        this.moduleFunctions = parent.moduleFunctions; // Share module functions with parent
         this.exports = parent.exports; // Share exports with parent
+        this.importedModules = parent.importedModules; // Share imported modules tracking
         this.functionRegistry = parent.functionRegistry;
         this.isGlobal = false;
     }
@@ -39,7 +47,9 @@ public class Context {
         this.parent = parent;
         this.variables = new HashMap<>(expectedVarCount);
         this.userFunctions = new HashMap<>(2);
+        this.moduleFunctions = parent.moduleFunctions;
         this.exports = parent.exports;
+        this.importedModules = parent.importedModules;
         this.functionRegistry = parent.functionRegistry;
         this.isGlobal = false;
     }
@@ -71,7 +81,7 @@ public class Context {
     }
 
     public void defineFunction(String name, List<String> parameters, Expression body) {
-        UserFunction func = new UserFunction(name, parameters, body);
+        UserFunction func = new UserFunction(name, parameters, body, this);
         if (isGlobal) {
             userFunctions.put(name, func);
         } else {
@@ -100,6 +110,30 @@ public class Context {
 
     public Map<String, JsonNode> getAllExports() {
         return new HashMap<>(exports);
+    }
+
+    public void defineModuleFunction(String namespace, String funcName, UserFunction func) {
+        moduleFunctions.computeIfAbsent(namespace, k -> new HashMap<>()).put(funcName, func);
+    }
+
+    public UserFunction getModuleFunction(String namespace, String funcName) {
+        Map<String, UserFunction> namespaceFuncs = moduleFunctions.get(namespace);
+        if (namespaceFuncs != null) {
+            return namespaceFuncs.get(funcName);
+        }
+        return null;
+    }
+
+    public Map<String, UserFunction> getUserFunctions() {
+        return new HashMap<>(userFunctions);
+    }
+
+    public boolean hasImportedModule(String moduleKey) {
+        return importedModules.contains(moduleKey);
+    }
+
+    public void markModuleAsImported(String moduleKey) {
+        importedModules.add(moduleKey);
     }
 
     public JsonNode callFunction(String name, List<Expression> argExprs) {
@@ -138,7 +172,9 @@ public class Context {
         }
 
         // Create new context for function execution
-        Context funcContext = new Context(this);
+        // Use the function's defining context as parent if available, otherwise use current context
+        Context parentContext = func.getDefiningContext() != null ? func.getDefiningContext() : this;
+        Context funcContext = new Context(parentContext);
 
         // Bind parameters
         List<String> params = func.getParameters();

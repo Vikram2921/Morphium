@@ -59,4 +59,13 @@ public class MemberAccessExpr implements Expression {
 
         return safe ? NullNode.getInstance() : null;
     }
+
+    public Expression getObject() {
+        return object;
+    }
+
+    public Expression getProperty() {
+        return property;
+    }
+
 }

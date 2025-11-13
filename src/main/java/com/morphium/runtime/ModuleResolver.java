@@ -27,6 +27,14 @@ public class ModuleResolver {
         this.dynamicResolvers = new HashMap<>();
     }
     
+    public void setBasePath(Path basePath) {
+        this.basePath = basePath;
+    }
+    
+    public Path getBasePath() {
+        return basePath;
+    }
+
     /**
      * Register a dynamic script resolver for a specific function name
      * @param functionName The name that will be used in import statements

@@ -9,15 +9,19 @@ import com.morphium.parser.ast.Expression;
 import com.morphium.runtime.Context;
 import com.morphium.runtime.HostFunctionRegistry;
 import com.morphium.runtime.ModuleResolver;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MorphiumEngine {
+    @Getter
     private final ModuleResolver moduleResolver;
+    @Getter
     private final HostFunctionRegistry functionRegistry;
     private final Context rootContext;
     private final ConcurrentHashMap<String, Expression> parsedExpressionCache;
@@ -48,14 +52,6 @@ public class MorphiumEngine {
         return evaluate(source, input, "<string>");
     }
 
-    public HostFunctionRegistry getFunctionRegistry() {
-        return functionRegistry;
-    }
-    
-    public ModuleResolver getModuleResolver() {
-        return moduleResolver;
-    }
-    
     public void setLogger(com.morphium.runtime.Logger logger) {
         functionRegistry.setLogger(logger);
     }
@@ -102,19 +98,18 @@ public class MorphiumEngine {
             Context evalContext = new Context(rootContext);
             evalContext.define("$", input);
 
-            // Handle imports and evaluate
-            JsonNode result = rootExpression.evaluate(evalContext);
+            // Process imports BEFORE evaluating the main expression
+            processImports(rootExpression, evalContext);
             
-            // Process imports if any
-            result = processImports(rootExpression, evalContext, result);
+            // Now evaluate with imports available
 
-            return result;
+            return rootExpression.evaluate(evalContext);
         } catch (Exception e) {
             throw new MorphiumException("Error evaluating transform: " + e.getMessage(), e);
         }
     }
 
-    private JsonNode processImports(Expression rootExpr, Context context, JsonNode result) {
+    private void processImports(Expression rootExpr, Context context) {
         if (rootExpr instanceof com.morphium.parser.ast.BlockExpr) {
             com.morphium.parser.ast.BlockExpr block = (com.morphium.parser.ast.BlockExpr) rootExpr;
             for (Expression expr : block.getExpressions()) {
@@ -123,7 +118,6 @@ public class MorphiumEngine {
                 }
             }
         }
-        return result;
     }
 
     private void handleImport(com.morphium.parser.ast.ImportStatement importStmt, Context context) {
@@ -150,6 +144,13 @@ public class MorphiumEngine {
                 cacheKey = modulePath;
             }
             
+            // Check if this module has already been imported in this context
+            String alias = importStmt.getAlias();
+            String importKey = cacheKey + ":" + alias;
+            if (context.hasImportedModule(importKey)) {
+                return; // Already imported, skip
+            }
+            
             // Parse the module with caching
             Expression moduleExpr = moduleCache.computeIfAbsent(cacheKey, k -> {
                 Lexer lexer = new Lexer(moduleSource, modulePath);
@@ -158,10 +159,18 @@ public class MorphiumEngine {
             });
             
             Context moduleContext = new Context(rootContext);
-            moduleExpr.evaluate(moduleContext);
+            
+            // Evaluate module expressions directly in moduleContext to preserve functions
+            if (moduleExpr instanceof com.morphium.parser.ast.BlockExpr) {
+                com.morphium.parser.ast.BlockExpr block = (com.morphium.parser.ast.BlockExpr) moduleExpr;
+                for (Expression expr : block.getExpressions()) {
+                    expr.evaluate(moduleContext);
+                }
+            } else {
+                moduleExpr.evaluate(moduleContext);
+            }
             
             // Import exports into current context
-            String alias = importStmt.getAlias();
             if (alias != null) {
                 // Import all exports under alias namespace
                 com.fasterxml.jackson.databind.node.ObjectNode exports = com.morphium.util.JsonUtil.createObject();
@@ -173,14 +182,19 @@ public class MorphiumEngine {
                 // Also import functions
                 importModuleFunctions(moduleContext, context, alias);
             }
+            
+            // Mark this module as imported
+            context.markModuleAsImported(importKey);
         } catch (IOException e) {
             throw new MorphiumException("Failed to import module: " + e.getMessage(), e);
         }
     }
 
     private void importModuleFunctions(Context moduleContext, Context targetContext, String namespace) {
-        // This is a simplified approach - in a full implementation,
-        // we'd properly handle function namespacing
+        Map<String, com.morphium.runtime.UserFunction> moduleFuncs = moduleContext.getUserFunctions();
+        for (Map.Entry<String, com.morphium.runtime.UserFunction> entry : moduleFuncs.entrySet()) {
+            targetContext.defineModuleFunction(namespace, entry.getKey(), entry.getValue());
+        }
     }
 
     public void clearCache() {
