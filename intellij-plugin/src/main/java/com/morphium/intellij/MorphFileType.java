@@ -35,6 +35,6 @@ public class MorphFileType extends LanguageFileType {
     @Nullable
     @Override
     public Icon getIcon() {
-        return null;
+        return MorphIcons.FILE;
     }
 }

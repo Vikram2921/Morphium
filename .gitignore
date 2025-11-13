@@ -22,3 +22,4 @@ Thumbs.db
 
 # Maven
 dependency-reduced-pom.xml
+/intellij-plugin/build/
