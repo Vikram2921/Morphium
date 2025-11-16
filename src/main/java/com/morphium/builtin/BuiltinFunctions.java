@@ -91,6 +91,53 @@ public class BuiltinFunctions {
         EAGER_FUNCTIONS.put("pathDepth", PathFunctions::pathDepth);
         EAGER_FUNCTIONS.put("normalizePath", PathFunctions::normalizePath);
         EAGER_FUNCTIONS.put("pathExists", PathFunctions::pathExists);
+        
+        // String utilities (Week 7-8)
+        EAGER_FUNCTIONS.put("contains", StringFunctions::contains);
+        EAGER_FUNCTIONS.put("startsWith", StringFunctions::startsWith);
+        EAGER_FUNCTIONS.put("endsWith", StringFunctions::endsWith);
+        EAGER_FUNCTIONS.put("indexOf", StringFunctions::indexOf);
+        EAGER_FUNCTIONS.put("substring", StringFunctions::substring);
+        EAGER_FUNCTIONS.put("padStart", StringFunctions::padStart);
+        EAGER_FUNCTIONS.put("padEnd", StringFunctions::padEnd);
+        EAGER_FUNCTIONS.put("capitalize", StringFunctions::capitalize);
+        EAGER_FUNCTIONS.put("titleCase", StringFunctions::titleCase);
+        EAGER_FUNCTIONS.put("cleanWhitespace", StringFunctions::cleanWhitespace);
+        EAGER_FUNCTIONS.put("matches", StringFunctions::matches);
+        EAGER_FUNCTIONS.put("matchesPattern", StringFunctions::matchesPattern);
+        EAGER_FUNCTIONS.put("repeat", StringFunctions::repeat);
+        EAGER_FUNCTIONS.put("reverseStr", StringFunctions::reverseStr);
+        
+        // Collection utilities (Week 9-10)
+        EAGER_FUNCTIONS.put("chunk", CollectionFunctions::chunk);
+        EAGER_FUNCTIONS.put("compact", CollectionFunctions::compact);
+        EAGER_FUNCTIONS.put("unique", CollectionFunctions::unique);
+        EAGER_FUNCTIONS.put("uniqueBy", CollectionFunctions::uniqueBy);
+        EAGER_FUNCTIONS.put("zip", CollectionFunctions::zip);
+        EAGER_FUNCTIONS.put("unzip", CollectionFunctions::unzip);
+        EAGER_FUNCTIONS.put("cumSum", CollectionFunctions::cumSum);
+        EAGER_FUNCTIONS.put("diff", CollectionFunctions::diff);
+        EAGER_FUNCTIONS.put("movingAvg", CollectionFunctions::movingAvg);
+        EAGER_FUNCTIONS.put("flatten", CollectionFunctions::flatten);
+        EAGER_FUNCTIONS.put("take", CollectionFunctions::take);
+        EAGER_FUNCTIONS.put("drop", CollectionFunctions::drop);
+        
+        // Lazy functions for collections (Week 9-10)
+        STREAM_FUNCTIONS.put("findIndex", CollectionFunctions::findIndex);
+        STREAM_FUNCTIONS.put("findLastIndex", CollectionFunctions::findLastIndex);
+        
+        // Object transformation (Week 11-12) - FINAL PHASE 1
+        EAGER_FUNCTIONS.put("pick", ObjectTransformFunctions::pick);
+        EAGER_FUNCTIONS.put("omit", ObjectTransformFunctions::omit);
+        EAGER_FUNCTIONS.put("invert", ObjectTransformFunctions::invert);
+        EAGER_FUNCTIONS.put("mapKeys", ObjectTransformFunctions::mapKeys);
+        EAGER_FUNCTIONS.put("mapValues", ObjectTransformFunctions::mapValues);
+        EAGER_FUNCTIONS.put("flattenObj", ObjectTransformFunctions::flattenObj);
+        EAGER_FUNCTIONS.put("unflattenObj", ObjectTransformFunctions::unflattenObj);
+        EAGER_FUNCTIONS.put("toCamelCase", ObjectTransformFunctions::toCamelCase);
+        EAGER_FUNCTIONS.put("toSnakeCase", ObjectTransformFunctions::toSnakeCase);
+        EAGER_FUNCTIONS.put("toKebabCase", ObjectTransformFunctions::toKebabCase);
+        EAGER_FUNCTIONS.put("deepClone", ObjectTransformFunctions::deepClone);
 
         EAGER_FUNCTIONS.put("error", BuiltinFunctions::error);
         EAGER_FUNCTIONS.put("log", BuiltinFunctions::log);
