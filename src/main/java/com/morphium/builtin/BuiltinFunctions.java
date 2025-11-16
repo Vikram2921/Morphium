@@ -13,7 +13,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 public class BuiltinFunctions {
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -73,6 +72,8 @@ public class BuiltinFunctions {
         EAGER_FUNCTIONS.put("keys", BuiltinFunctions::keys);
         EAGER_FUNCTIONS.put("values", BuiltinFunctions::values);
         EAGER_FUNCTIONS.put("entries", BuiltinFunctions::entries);
+        EAGER_FUNCTIONS.put("removeKey", BuiltinFunctions::removeKey);
+        EAGER_FUNCTIONS.put("renameKey", BuiltinFunctions::renameKey);
         
         // Error handling and logging
         EAGER_FUNCTIONS.put("error", BuiltinFunctions::error);
@@ -81,6 +82,25 @@ public class BuiltinFunctions {
         EAGER_FUNCTIONS.put("logWarn", BuiltinFunctions::logWarn);
         EAGER_FUNCTIONS.put("logError", BuiltinFunctions::logError);
         EAGER_FUNCTIONS.put("logDebug", BuiltinFunctions::logDebug);
+        
+        // Type checking functions (Phase 1, Week 1-2)
+        EAGER_FUNCTIONS.put("isString", TypeFunctions::isString);
+        EAGER_FUNCTIONS.put("isNumber", TypeFunctions::isNumber);
+        EAGER_FUNCTIONS.put("isBoolean", TypeFunctions::isBoolean);
+        EAGER_FUNCTIONS.put("isArray", TypeFunctions::isArray);
+        EAGER_FUNCTIONS.put("isObject", TypeFunctions::isObject);
+        EAGER_FUNCTIONS.put("isNull", TypeFunctions::isNull);
+        EAGER_FUNCTIONS.put("isEmpty", TypeFunctions::isEmpty);
+        EAGER_FUNCTIONS.put("typeOf", TypeFunctions::typeOf);
+        EAGER_FUNCTIONS.put("isFinite", TypeFunctions::isFinite);
+        EAGER_FUNCTIONS.put("isNaN", TypeFunctions::isNaN);
+        EAGER_FUNCTIONS.put("isInteger", TypeFunctions::isInteger);
+        
+        // Type conversion functions (Phase 1, Week 1-2)
+        EAGER_FUNCTIONS.put("toInt", TypeFunctions::toInt);
+        EAGER_FUNCTIONS.put("toFloat", TypeFunctions::toFloat);
+        EAGER_FUNCTIONS.put("toStr", TypeFunctions::toStringFunc);
+        EAGER_FUNCTIONS.put("toBoolNew", TypeFunctions::toBoolFunc);
     }
 
     public static JsonNode call(String name, java.util.List<Expression> argExprs, Context context) {
@@ -477,6 +497,48 @@ public class BuiltinFunctions {
             }
         }
         current.set(parts[parts.length - 1], value);
+        
+        return result;
+    }
+
+    private static JsonNode removeKey(JsonNode[] args) {
+        return removeKey(args, null);
+    }
+    
+    private static JsonNode removeKey(JsonNode[] args, Context context) {
+        if (args.length < 2) return args.length > 0 ? args[0] : NullNode.getInstance();
+        
+        JsonNode obj = args[0];
+        String key = args[1].asText();
+        
+        if (!obj.isObject()) return obj;
+        
+        ObjectNode result = obj.deepCopy();
+        result.remove(key);
+        
+        return result;
+    }
+
+    private static JsonNode renameKey(JsonNode[] args) {
+        return renameKey(args, null);
+    }
+    
+    private static JsonNode renameKey(JsonNode[] args, Context context) {
+        if (args.length < 3) return args.length > 0 ? args[0] : NullNode.getInstance();
+        
+        JsonNode obj = args[0];
+        String oldKey = args[1].asText();
+        String newKey = args[2].asText();
+        
+        if (!obj.isObject()) return obj;
+        
+        ObjectNode result = obj.deepCopy();
+        JsonNode value = result.get(oldKey);
+        
+        if (value != null) {
+            result.remove(oldKey);
+            result.set(newKey, value);
+        }
         
         return result;
     }

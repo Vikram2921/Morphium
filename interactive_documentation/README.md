@@ -64,6 +64,8 @@ Welcome to the complete interactive documentation for Morphium DSL! This guide c
 - [entries()](functions/entries.md) ✅ - Get key-value pairs
 - [get()](functions/get.md) ✅ - Get nested value safely
 - [set()](functions/set.md) ✅ - Set nested value
+- [removeKey()](functions/removeKey.md) ✅ - Remove object key
+- [renameKey()](functions/renameKey.md) ✅ - Rename object key
 
 #### String Functions
 - [split()](functions/split.md) ✅ - Split string into array
