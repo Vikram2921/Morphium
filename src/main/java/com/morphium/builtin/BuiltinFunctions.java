@@ -21,7 +21,6 @@ public class BuiltinFunctions {
     private static final Map<String, EagerFunction> EAGER_FUNCTIONS = new HashMap<>();
     
     static {
-        // Stream functions that need unevaluated expressions
         STREAM_FUNCTIONS.put("map", BuiltinFunctions::map);
         STREAM_FUNCTIONS.put("filter", BuiltinFunctions::filter);
         STREAM_FUNCTIONS.put("reduce", BuiltinFunctions::reduce);
@@ -44,8 +43,7 @@ public class BuiltinFunctions {
         STREAM_FUNCTIONS.put("min", BuiltinFunctions::min);
         STREAM_FUNCTIONS.put("max", BuiltinFunctions::max);
         STREAM_FUNCTIONS.put("runMorph", BuiltinFunctions::runMorph);
-        
-        // Eager functions that evaluate args first
+
         EAGER_FUNCTIONS.put("merge", BuiltinFunctions::merge);
         EAGER_FUNCTIONS.put("pluck", BuiltinFunctions::pluck);
         EAGER_FUNCTIONS.put("indexBy", BuiltinFunctions::indexBy);
@@ -74,16 +72,33 @@ public class BuiltinFunctions {
         EAGER_FUNCTIONS.put("entries", BuiltinFunctions::entries);
         EAGER_FUNCTIONS.put("removeKey", BuiltinFunctions::removeKey);
         EAGER_FUNCTIONS.put("renameKey", BuiltinFunctions::renameKey);
-        
-        // Error handling and logging
+
+        EAGER_FUNCTIONS.put("coalesce", NullSafetyFunctions::coalesce);
+        EAGER_FUNCTIONS.put("ifNull", NullSafetyFunctions::ifNull);
+        EAGER_FUNCTIONS.put("nullIf", NullSafetyFunctions::nullIf);
+        EAGER_FUNCTIONS.put("safeGet", NullSafetyFunctions::safeGet);
+        EAGER_FUNCTIONS.put("tryGet", NullSafetyFunctions::tryGet);
+        EAGER_FUNCTIONS.put("removeNulls", NullSafetyFunctions::removeNulls);
+        EAGER_FUNCTIONS.put("replaceNulls", NullSafetyFunctions::replaceNulls);
+        EAGER_FUNCTIONS.put("isNullOrEmpty", NullSafetyFunctions::isNullOrEmpty);
+        EAGER_FUNCTIONS.put("firstValid", NullSafetyFunctions::firstValid);
+
+        EAGER_FUNCTIONS.put("getIn", PathFunctions::getIn);
+        EAGER_FUNCTIONS.put("setIn", PathFunctions::setIn);
+        EAGER_FUNCTIONS.put("deleteIn", PathFunctions::deleteIn);
+        EAGER_FUNCTIONS.put("hasPath", PathFunctions::hasPath);
+        EAGER_FUNCTIONS.put("getPaths", PathFunctions::getPaths);
+        EAGER_FUNCTIONS.put("pathDepth", PathFunctions::pathDepth);
+        EAGER_FUNCTIONS.put("normalizePath", PathFunctions::normalizePath);
+        EAGER_FUNCTIONS.put("pathExists", PathFunctions::pathExists);
+
         EAGER_FUNCTIONS.put("error", BuiltinFunctions::error);
         EAGER_FUNCTIONS.put("log", BuiltinFunctions::log);
         EAGER_FUNCTIONS.put("logInfo", BuiltinFunctions::logInfo);
         EAGER_FUNCTIONS.put("logWarn", BuiltinFunctions::logWarn);
         EAGER_FUNCTIONS.put("logError", BuiltinFunctions::logError);
         EAGER_FUNCTIONS.put("logDebug", BuiltinFunctions::logDebug);
-        
-        // Type checking functions (Phase 1, Week 1-2)
+
         EAGER_FUNCTIONS.put("isString", TypeFunctions::isString);
         EAGER_FUNCTIONS.put("isNumber", TypeFunctions::isNumber);
         EAGER_FUNCTIONS.put("isBoolean", TypeFunctions::isBoolean);
@@ -95,8 +110,7 @@ public class BuiltinFunctions {
         EAGER_FUNCTIONS.put("isFinite", TypeFunctions::isFinite);
         EAGER_FUNCTIONS.put("isNaN", TypeFunctions::isNaN);
         EAGER_FUNCTIONS.put("isInteger", TypeFunctions::isInteger);
-        
-        // Type conversion functions (Phase 1, Week 1-2)
+
         EAGER_FUNCTIONS.put("toInt", TypeFunctions::toInt);
         EAGER_FUNCTIONS.put("toFloat", TypeFunctions::toFloat);
         EAGER_FUNCTIONS.put("toStr", TypeFunctions::toStringFunc);
@@ -553,7 +567,6 @@ public class BuiltinFunctions {
         return true;
     }
 
-    // Stream-like operations
     private static JsonNode flatMap(java.util.List<Expression> argExprs, Context context) {
         if (argExprs.size() < 3) throw new RuntimeException("flatMap requires 3 arguments");
         
@@ -1086,9 +1099,7 @@ public class BuiltinFunctions {
             throw new RuntimeException("Failed to run morph file " + morphFile + ": " + e.getMessage(), e);
         }
     }
-    
-    // Error handling and logging functions
-    
+
     private static JsonNode error(JsonNode[] args) {
         return error(args, null);
     }
@@ -1118,7 +1129,6 @@ public class BuiltinFunctions {
                 return args.length > 0 ? args[0] : NullNode.getInstance();
             }
         }
-        // Fallback to System.out
         for (int i = 0; i < args.length; i++) {
             if (i > 0) System.out.print(" ");
             System.out.print(args[i].toString());
@@ -1176,7 +1186,6 @@ public class BuiltinFunctions {
                 return;
             }
         }
-        // Fallback to System.out/err
         String prefix = "[" + level + "] ";
         for (int i = 0; i < args.length; i++) {
             if (i > 0) System.out.print(" ");

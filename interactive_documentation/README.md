@@ -89,6 +89,17 @@ Welcome to the complete interactive documentation for Morphium DSL! This guide c
 - [formatDate()](functions/formatDate.md) ✅ - Format date string
 - [peek()](functions/peek.md) ✅ - Debug peek at values
 
+#### Null Safety Functions **NEW Week 3-4**
+- [coalesce()](functions/coalesce.md) ✅ - First non-null value
+- [ifNull()](functions/ifNull.md) ✅ - Value with fallback
+- [nullIf()](functions/nullIf.md) ✅ - Conditional null
+- [safeGet()](functions/safeGet.md) ✅ - Safe property access
+- [tryGet()](functions/tryGet.md) ✅ - Safe access with default
+- [removeNulls()](functions/removeNulls.md) ✅ - Remove null properties
+- [replaceNulls()](functions/replaceNulls.md) ✅ - Replace nulls with default
+- [isNullOrEmpty()](functions/isNullOrEmpty.md) ✅ - Check for null/empty
+- [firstValid()](functions/firstValid.md) ✅ - First valid value
+
 #### Advanced
 - [runMorph()](functions/runMorph.md) ✅ - Run nested transformation
 - [error()](functions/error.md) ✅ - Throw custom error
@@ -101,6 +112,7 @@ Welcome to the complete interactive documentation for Morphium DSL! This guide c
 - [Error Handling](16-error-handling.md) ✅
 - [Logging](17-logging.md) ✅
 - [Performance Tips](18-performance.md) ✅
+- [Null Safety](19-null-safety.md) ✅ **NEW**
 
 ### Integration
 - [Java API](19-java-api.md) ✅
