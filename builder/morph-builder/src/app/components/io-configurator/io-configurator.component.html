@@ -1,0 +1,167 @@
+<div class="io-configurator">
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'input'" (click)="activeTab = 'input'">
+      📥 JSON Input
+    </button>
+    <button class="tab" [class.active]="activeTab === 'output'" (click)="activeTab = 'output'">
+      📤 Output Config
+    </button>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'input' && function.jsonInput">
+    <div class="config-header">
+      <label class="toggle-switch">
+        <input type="checkbox" [checked]="function.jsonInput.enabled" (change)="toggleInputEnabled()">
+        <span class="toggle-label">Enable JSON Input</span>
+      </label>
+    </div>
+
+    <div *ngIf="function.jsonInput.enabled" class="config-body">
+      <div class="section">
+        <div class="section-header">
+          <h4>Sample JSON Input</h4>
+          <button class="btn btn-sm btn-primary" (click)="parseJsonInput()">✓ Validate</button>
+        </div>
+        <textarea [(ngModel)]="function.jsonInput.sampleJson" (ngModelChange)="updateJsonInput($event)"
+          class="json-editor" rows="10"></textarea>
+        <div *ngIf="jsonError" class="error-message">❌ {{ jsonError }}</div>
+        <div *ngIf="jsonPreview && !jsonError" class="success-message">✅ Valid JSON</div>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <h4>JSON to Parameter Mappings</h4>
+          <button class="btn btn-sm btn-secondary" (click)="autoMapJsonToParams()" [disabled]="!jsonPreview">
+            🔄 Auto Map
+          </button>
+          <button class="btn btn-sm btn-primary" (click)="addJsonMapping()">➕ Add</button>
+        </div>
+
+        <div cdkDropList (cdkDropListDropped)="onMappingDrop($event)" class="mapping-list">
+          <div *ngFor="let mapping of function.jsonInput.mappings" cdkDrag class="mapping-card">
+            <div class="mapping-handle" cdkDragHandle>⋮⋮</div>
+            <div class="mapping-fields">
+              <div class="field-group">
+                <label>JSON Path:</label>
+                <input [(ngModel)]="mapping.jsonPath" (ngModelChange)="emitChange()"
+                  placeholder="$.property" class="mapping-input" [attr.list]="'jsonKeys-' + mapping.id">
+                <datalist [id]="'jsonKeys-' + mapping.id">
+                  <option *ngFor="let key of getJsonKeys()" [value]="key"></option>
+                </datalist>
+              </div>
+              <div class="arrow">→</div>
+              <div class="field-group">
+                <label>Parameter:</label>
+                <select [(ngModel)]="mapping.parameterName" (ngModelChange)="emitChange()" class="mapping-input">
+                  <option *ngFor="let param of function.parameters" [value]="param.name">{{ param.name }}</option>
+                </select>
+              </div>
+              <div class="field-group full-width">
+                <label>Transform:</label>
+                <input [(ngModel)]="mapping.transformExpression" (ngModelChange)="emitChange()"
+                  placeholder="Optional: value * 2" class="mapping-input">
+              </div>
+            </div>
+            <div class="mapping-actions">
+              <button class="btn-icon" (click)="testMapping(mapping)" [disabled]="!jsonPreview">🧪</button>
+              <button class="btn-icon btn-danger" (click)="removeJsonMapping(mapping)">🗑️</button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="function.jsonInput.mappings.length === 0" class="empty-state">
+          No mappings. Click "Add" or "Auto Map".
+        </div>
+      </div>
+
+      <div class="section" *ngIf="jsonPreview">
+        <h4>Available JSON Paths (drag to mapping)</h4>
+        <div class="json-keys">
+          <span *ngFor="let key of getJsonKeys()" class="json-key-chip">{{ key }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'output' && function.outputConfig">
+    <div class="config-header">
+      <label class="toggle-switch">
+        <input type="checkbox" [checked]="function.outputConfig.enabled" (change)="toggleOutputEnabled()">
+        <span class="toggle-label">Enable Output Configuration</span>
+      </label>
+    </div>
+
+    <div *ngIf="function.outputConfig.enabled" class="config-body">
+      <div class="section">
+        <h4>Output Format</h4>
+        <div class="format-selector">
+          <label class="format-option">
+            <input type="radio" name="outputFormat" value="json"
+              [checked]="function.outputConfig.format === 'json'" (change)="updateOutputFormat('json')">
+            <span>📄 JSON</span>
+          </label>
+          <label class="format-option">
+            <input type="radio" name="outputFormat" value="xml"
+              [checked]="function.outputConfig.format === 'xml'" (change)="updateOutputFormat('xml')">
+            <span>📝 XML</span>
+          </label>
+          <label class="format-option">
+            <input type="radio" name="outputFormat" value="text"
+              [checked]="function.outputConfig.format === 'text'" (change)="updateOutputFormat('text')">
+            <span>📃 Text</span>
+          </label>
+          <label class="format-option">
+            <input type="radio" name="outputFormat" value="custom"
+              [checked]="function.outputConfig.format === 'custom'" (change)="updateOutputFormat('custom')">
+            <span>⚙️ Custom</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="section">
+        <h4>Output Template</h4>
+        <p class="help-text">Use double braces with variable name for placeholders</p>
+        <textarea [(ngModel)]="function.outputConfig.template" (ngModelChange)="updateOutputTemplate($event)"
+          class="output-editor" rows="8"></textarea>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          <h4>Output Mappings</h4>
+          <button class="btn btn-sm btn-primary" (click)="addOutputMapping()">➕ Add</button>
+        </div>
+
+        <div cdkDropList (cdkDropListDropped)="onMappingDrop($event)" class="mapping-list">
+          <div *ngFor="let mapping of function.outputConfig.mappings" cdkDrag class="mapping-card">
+            <div class="mapping-handle" cdkDragHandle>⋮⋮</div>
+            <div class="mapping-fields">
+              <div class="field-group">
+                <label>Source:</label>
+                <input [(ngModel)]="mapping.sourceExpression" (ngModelChange)="emitChange()"
+                  placeholder="returnValue" class="mapping-input">
+              </div>
+              <div class="arrow">→</div>
+              <div class="field-group">
+                <label>Output Path:</label>
+                <input [(ngModel)]="mapping.outputPath" (ngModelChange)="emitChange()"
+                  placeholder="$.result" class="mapping-input">
+              </div>
+              <div class="field-group full-width">
+                <label>Transform:</label>
+                <input [(ngModel)]="mapping.transformExpression" (ngModelChange)="emitChange()"
+                  placeholder="Optional" class="mapping-input">
+              </div>
+            </div>
+            <div class="mapping-actions">
+              <button class="btn-icon btn-danger" (click)="removeOutputMapping(mapping)">🗑️</button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="function.outputConfig.mappings.length === 0" class="empty-state">
+          No output mappings. Click "Add" to start.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

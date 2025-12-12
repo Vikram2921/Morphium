@@ -1,0 +1,205 @@
+<div class="morph-builder">
+  <header class="header">
+    <h1>🔮 Morphium Builder</h1>
+    <div class="header-actions">
+      <input
+        type="text"
+        [(ngModel)]="morphFile.name"
+        class="file-name-input"
+        placeholder="filename.morph"
+      />
+      <button (click)="newFile()" class="btn btn-secondary">New</button>
+      <label class="btn btn-secondary">
+        Import
+        <input
+          type="file"
+          accept=".morph"
+          (change)="onFileSelected($event)"
+          style="display: none"
+        />
+      </label>
+      <button (click)="exportFile()" class="btn btn-primary">Export</button>
+    </div>
+  </header>
+
+  <div class="main-content">
+    <!-- Enhanced Toolbox -->
+    <aside class="toolbox">
+      <div class="toolbox-header">
+        <h3>🧰 Toolbox</h3>
+        <button (click)="collapseAllCategories()" class="btn-icon" title="Collapse All">
+          <span *ngIf="!allCollapsed">⬆️</span>
+          <span *ngIf="allCollapsed">⬇️</span>
+        </button>
+      </div>
+
+      <div class="search-box">
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange()"
+          placeholder="🔍 Search tools..."
+          class="search-input">
+        <button *ngIf="searchQuery" (click)="clearSearch()" class="btn-clear">✕</button>
+      </div>
+
+      <!-- Search Results -->
+      <div *ngIf="searchQuery && searchResults.length > 0" class="search-results">
+        <div class="search-result-header">
+          Found {{ searchResults.length }} item(s)
+        </div>
+        <div 
+          *ngFor="let item of searchResults"
+          class="tool-item"
+          draggable="true"
+          (dragstart)="onDragStart($event, item)"
+          (dragend)="onDragEnd($event)">
+          <span class="tool-icon">{{ item.icon }}</span>
+          <div class="tool-content">
+            <span class="tool-name">{{ item.name }}</span>
+            <span class="tool-desc">{{ item.description }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div *ngIf="!searchQuery" class="categories">
+        <button (click)="addNewFunction()" class="btn btn-block btn-primary add-func-btn">
+          ➕ Add New Function
+        </button>
+
+        <div *ngFor="let category of toolboxCategories" class="category">
+          <div 
+            class="category-header"
+            (click)="toggleCategory(category)"
+            [style.borderLeftColor]="category.color">
+            <span class="category-icon">{{ category.icon }}</span>
+            <span class="category-name">{{ category.name }}</span>
+            <span class="category-count">({{ category.items.length }})</span>
+            <span class="category-toggle">
+              <span *ngIf="category.expanded">▼</span>
+              <span *ngIf="!category.expanded">▶</span>
+            </span>
+          </div>
+
+          <div *ngIf="category.expanded" class="category-items">
+            <div 
+              *ngFor="let item of category.items"
+              class="tool-item"
+              draggable="true"
+              (dragstart)="onDragStart($event, item)"
+              (dragend)="onDragEnd($event)"
+              [title]="item.description">
+              <span class="tool-icon">{{ item.icon }}</span>
+              <div class="tool-content">
+                <span class="tool-name">{{ item.name }}</span>
+                <span class="tool-desc">{{ item.description }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <!-- Canvas -->
+    <div class="canvas">
+      <div class="canvas-header">
+        <h3>Functions ({{ morphFile.functions.length }})</h3>
+      </div>
+      
+      <div
+        cdkDropList
+        (cdkDropListDropped)="drop($event)"
+        class="function-list"
+      >
+        <div
+          *ngFor="let func of morphFile.functions"
+          cdkDrag
+          class="function-card"
+          [class.selected]="selectedFunction?.id === func.id"
+          (click)="selectFunction(func)"
+        >
+          <div class="function-header">
+            <span class="drag-handle" cdkDragHandle>⋮⋮</span>
+            <input
+              type="text"
+              [(ngModel)]="func.name"
+              (ngModelChange)="updateFunctionName(func, $event)"
+              class="function-name-input"
+              (click)="$event.stopPropagation()"
+            />
+            <button
+              (click)="deleteFunction(func); $event.stopPropagation()"
+              class="btn-icon btn-danger"
+              title="Delete function"
+            >
+              🗑️
+            </button>
+          </div>
+          
+          <div class="function-params">
+            <label>Parameters:</label>
+            <input
+              type="text"
+              [value]="getParametersString(func)"
+              (input)="updateParameters(func, $any($event.target).value)"
+              placeholder="param1, param2"
+              class="params-input"
+              (click)="$event.stopPropagation()"
+            />
+          </div>
+
+          <div class="function-body" *ngIf="selectedFunction?.id === func.id">
+            <label>Body:</label>
+            <textarea
+              #bodyTextarea
+              [(ngModel)]="func.body"
+              (ngModelChange)="updateFunctionBody(func, $event)"
+              class="body-textarea"
+              rows="8"
+              (click)="$event.stopPropagation()"
+              (drop)="onDropInBody($event, func, bodyTextarea)"
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave($event)"
+            ></textarea>
+            <div class="drop-hint">💡 Drag tools from toolbox to insert code</div>
+
+            <button 
+              class="btn btn-secondary btn-block config-btn"
+              (click)="toggleIoConfig(func); $event.stopPropagation()">
+              ⚙️ Configure Input/Output
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="morphFile.functions.length === 0" class="empty-state">
+        <p>No functions yet. Click "Add Function" to get started!</p>
+      </div>
+    </div>
+
+    <!-- Preview Panel -->
+    <aside class="preview-panel" *ngIf="!showIoConfig">
+      <div class="preview-header">
+        <h3>Code Preview</h3>
+        <button (click)="copyCode()" class="btn btn-sm btn-secondary" title="Copy code">
+          📋 Copy
+        </button>
+      </div>
+      <pre class="code-preview">{{ codePreview || '// Your code will appear here' }}</pre>
+    </aside>
+
+    <!-- IO Configuration Panel -->
+    <aside class="io-config-panel" *ngIf="showIoConfig && ioConfigFunction">
+      <div class="io-config-header">
+        <h3>⚙️ Input/Output Configuration</h3>
+        <button (click)="closeIoConfig()" class="btn btn-sm btn-secondary" title="Close">
+          ✕ Close
+        </button>
+      </div>
+      <app-io-configurator 
+        [function]="ioConfigFunction"
+        (functionChange)="onIoConfigChange($event)">
+      </app-io-configurator>
+    </aside>
+  </div>
+</div>
