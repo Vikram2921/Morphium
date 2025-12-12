@@ -1090,5 +1090,3 @@ number.toString()
 - [README](README.md)
 
 ---
-
-*Last updated: 2025-01-12*

@@ -232,9 +232,4 @@ Apache License 2.0
 
 ---
 
-**Version:** 1.0.0-SNAPSHOT  
-**Last Updated:** November 12, 2025
-
----
-
 Happy Transforming! 🎉

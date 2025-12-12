@@ -727,5 +727,3 @@ Now that you understand the basics, continue learning:
 - [Quick Start](01-quick-start.md)
 
 ---
-
-*Last updated: 2025-01-12*
