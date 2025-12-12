@@ -4,6 +4,8 @@
 
 This document summarizes all the improvements, features, and documentation created for the Morphium DSL project.
 
+**Inspired by [JSLT](https://github.com/schibsted/jslt)** - A JSON transformation language that pioneered declarative JSON-to-JSON transformations. Morphium builds on this concept with enhanced control flow, streaming operations, and Java integration.
+
 ## 🚀 Quick Start
 
 **Try the Professional Playground:**
@@ -607,7 +609,3 @@ Added 11 powerful object manipulation functions:
 - [Week 11-12 Report](interactive_documentation/phase1/PHASE1_WEEK11-12_REPORT.md)
 
 ---
-
-**Last Updated**: November 16, 2025  
-**Version**: 1.0.0-SNAPSHOT  
-**Status**: ✅ **PHASE 1 COMPLETE (100%)** - Ready for Enterprise Use!
